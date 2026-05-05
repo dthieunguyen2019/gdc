@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Amaris · Global Delivery Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f5f7fa;
+  --surface: #ffffff;
+  --surface2: #f0f2f6;
+  --surface3: #e8ebf0;
+  --border: rgba(0,0,0,0.08);
+  --border2: rgba(0,0,0,0.14);
+  --text: #111827;
+  --text2: #374151;
+  --muted: #6b7280;
+  --accent: #2563eb;
+  --accent-light: rgba(37,99,235,0.08);
+  --green: #16a34a;
+  --amber: #d97706;
+  --red: #dc2626;
+  --green-bg: rgba(22,163,74,0.10);
+  --amber-bg: rgba(217,119,6,0.10);
+  --red-bg: rgba(220,38,38,0.10);
+  --shadow: 0 1px 4px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.10);
+  --radius: 8px;
+  --header-h: 56px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:13px;line-height:1.5;min-height:100vh;}
+
+/* ── NAV ── */
+nav{
+  position:sticky;top:0;z-index:200;
+  background:#fff;border-bottom:1px solid var(--border);
+  height:var(--header-h);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 24px;box-shadow:var(--shadow);
+}
+.nav-logo{
+  font-family:'Syne',sans-serif;font-weight:800;font-size:14px;
+  display:flex;align-items:center;gap:8px;
+}
+.nav-dot{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.5;transform:scale(.8);}}
+.nav-sub{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;}
+.nav-tabs{display:flex;gap:4px;}
+.nav-tab{
+  font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;
+  padding:6px 14px;border-radius:6px;border:1px solid transparent;
+  background:transparent;color:var(--muted);cursor:pointer;transition:all .15s;
+}
+.nav-tab.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+.nav-tab:not(.active):hover{background:var(--surface2);color:var(--text);}
+.nav-right{display:flex;align-items:center;gap:10px;}
+.role-sel{
+  font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.06em;
+  padding:5px 10px;border-radius:6px;border:1px solid var(--border2);
+  background:var(--surface2);color:var(--text);cursor:pointer;
+}
+.btn-export{
+  font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;
+  padding:6px 12px;border-radius:6px;border:1px solid var(--border2);
+  background:var(--surface);color:var(--muted);cursor:pointer;transition:all .15s;
+}
+.btn-export:hover{border-color:var(--accent);color:var(--accent);}
+.btn-import-wrap{position:relative;}
+.btn-import{
+  font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;
+  padding:6px 12px;border-radius:6px;border:1px solid var(--border2);
+  background:var(--surface);color:var(--muted);cursor:pointer;transition:all .15s;
+}
+.btn-import:hover{border-color:var(--green);color:var(--green);}
+
+/* ── PAGE VIEWS ── */
+.page{display:none;}
+.page.active{display:block;}
+
+/* ══════════════════════════════
+   DASHBOARD PAGE
+══════════════════════════════ */
+.kpi-strip{
+  display:grid;grid-template-columns:repeat(6,1fr);
+  gap:1px;background:var(--border);
+  border-bottom:1px solid var(--border);
+}
+.kpi{background:var(--surface);padding:14px 18px;display:flex;flex-direction:column;gap:3px;}
+.kpi-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);}
+.kpi-value{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;}
+.kpi-sub{font-size:10px;color:var(--muted);}
+.kpi-value.green{color:var(--green);}
+.kpi-value.amber{color:var(--amber);}
+.kpi-value.red{color:var(--red);}
+.kpi-value.blue{color:var(--accent);}
+
+.dash-body{display:grid;grid-template-columns:240px 1fr;min-height:calc(100vh - var(--header-h) - 65px - 56px);}
+
+/* sidebar */
+.sidebar{
+  background:var(--surface);border-right:1px solid var(--border);
+  padding:16px 14px;display:flex;flex-direction:column;gap:16px;
+  position:sticky;top:calc(var(--header-h) + 65px);
+  height:calc(100vh - var(--header-h) - 65px - 40px);overflow-y:auto;
+}
+.filter-title{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+.filter-btns{display:flex;flex-wrap:wrap;gap:5px;}
+.fbtn{
+  font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.04em;
+  padding:4px 9px;border-radius:4px;border:1px solid var(--border2);
+  background:transparent;color:var(--muted);cursor:pointer;transition:all .13s;
+}
+.fbtn:hover{border-color:var(--accent);color:var(--text);}
+.fbtn.active{background:var(--accent-light);border-color:var(--accent);color:var(--accent);}
+.fbtn.r-active{background:var(--red-bg);border-color:var(--red);color:var(--red);}
+.fbtn.a-active{background:var(--amber-bg);border-color:var(--amber);color:var(--amber);}
+.fbtn.g-active{background:var(--green-bg);border-color:var(--green);color:var(--green);}
+.fdivider{height:1px;background:var(--border);margin:0 -4px;}
+.search-input{
+  width:100%;padding:7px 10px;border:1px solid var(--border2);border-radius:6px;
+  font-family:'Inter',sans-serif;font-size:12px;background:var(--surface2);
+  color:var(--text);outline:none;transition:border .15s;
+}
+.search-input:focus{border-color:var(--accent);}
+.search-input::placeholder{color:var(--muted);}
+.reset-btn{
+  width:100%;padding:7px;border:1px solid var(--border);border-radius:6px;
+  background:transparent;color:var(--muted);cursor:pointer;
+  font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;transition:all .15s;
+}
+.reset-btn:hover{border-color:var(--red);color:var(--red);}
+
+/* main table area */
+.dash-main{padding:20px 24px;overflow-y:auto;}
+.dash-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.results-count{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.08em;}
+.region-group{margin-bottom:28px;}
+.region-header{
+  display:flex;align-items:center;gap:8px;margin-bottom:10px;
+  padding-bottom:6px;border-bottom:1px solid var(--border);
+}
+.region-title{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;}
+.region-count{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);}
+
+/* project table */
+.proj-table{width:100%;border-collapse:collapse;font-size:12px;}
+.proj-table th{
+  font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted);font-weight:500;padding:5px 8px;text-align:left;
+  border-bottom:1px solid var(--border);white-space:nowrap;position:sticky;top:0;background:var(--bg);
+}
+.proj-table td{padding:9px 8px;border-bottom:1px solid var(--border);vertical-align:middle;}
+.proj-table tr:last-child td{border-bottom:none;}
+.proj-table tr{transition:background .1s;}
+.proj-table tr:hover td{background:var(--surface2);}
+.row-red td:first-child{border-left:3px solid var(--red);}
+.row-amber td:first-child{border-left:3px solid var(--amber);}
+
+.client-name{font-weight:600;color:var(--text);font-size:12px;}
+.project-name{font-size:10px;color:var(--muted);margin-top:1px;max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.entity-tag{
+  font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);
+  background:var(--surface2);border:1px solid var(--border);
+  padding:2px 6px;border-radius:3px;white-space:nowrap;
+}
+.sl-text{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);white-space:nowrap;}
+.rag{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;font-size:11px;}
+.rag-g{background:var(--green-bg);}
+.rag-a{background:var(--amber-bg);}
+.rag-r{background:var(--red-bg);}
+.rag-row{display:flex;gap:2px;align-items:center;}
+.trend-up{color:var(--green);font-size:12px;}
+.trend-dn{color:var(--red);font-size:12px;}
+.trend-fl{color:var(--muted);font-size:12px;}
+.mpill{font-family:'DM Mono',monospace;font-size:10px;padding:2px 6px;border-radius:3px;white-space:nowrap;}
+.m-low{background:var(--red-bg);color:var(--red);border:1px solid rgba(220,38,38,.2);}
+.m-mid{background:var(--amber-bg);color:var(--amber);border:1px solid rgba(217,119,6,.2);}
+.m-hi{background:var(--green-bg);color:var(--green);border:1px solid rgba(22,163,74,.2);}
+.rev-txt{font-family:'DM Mono',monospace;font-size:10px;white-space:nowrap;}
+.team-num{font-family:'DM Mono',monospace;font-size:11px;font-weight:500;}
+.dm-txt{font-size:10px;color:var(--muted);white-space:nowrap;max-width:100px;overflow:hidden;text-overflow:ellipsis;}
+.comment-txt{font-size:10px;color:var(--muted);max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.watch-badge{font-family:'DM Mono',monospace;font-size:9px;padding:2px 6px;border-radius:3px;letter-spacing:.05em;text-transform:uppercase;}
+.wb-r{background:var(--red-bg);color:var(--red);border:1px solid rgba(220,38,38,.25);}
+.wb-a{background:var(--amber-bg);color:var(--amber);border:1px solid rgba(217,119,6,.25);}
+.wb-g{background:var(--green-bg);color:var(--green);border:1px solid rgba(22,163,74,.25);}
+.empty-state{text-align:center;padding:60px 20px;color:var(--muted);}
+.empty-icon{font-size:28px;margin-bottom:10px;}
+.empty-text{font-family:'Syne',sans-serif;font-size:13px;}
+
+/* edit button in table */
+.btn-edit-row{
+  padding:3px 8px;border-radius:4px;border:1px solid var(--border2);
+  background:transparent;color:var(--muted);cursor:pointer;font-size:10px;
+  font-family:'DM Mono',monospace;letter-spacing:.04em;transition:all .13s;
+}
+.btn-edit-row:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light);}
+
+/* footer */
+footer{
+  background:var(--surface);border-top:1px solid var(--border);
+  padding:10px 24px;display:flex;align-items:center;justify-content:space-between;
+}
+.footer-left{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;}
+.footer-legend{display:flex;gap:14px;align-items:center;}
+.leg-item{display:flex;align-items:center;gap:4px;font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);}
+.leg-dot{width:6px;height:6px;border-radius:50%;}
+.leg-dot.g{background:var(--green);}
+.leg-dot.a{background:var(--amber);}
+.leg-dot.r{background:var(--red);}
+
+/* ══════════════════════════════
+   DATA ENTRY PAGE
+══════════════════════════════ */
+.entry-page{padding:24px 32px;max-width:1100px;margin:0 auto;}
+.entry-page-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:24px;
+}
+.entry-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;}
+.entry-subtitle{font-size:11px;color:var(--muted);margin-top:2px;}
+
+.project-list-wrap{margin-bottom:24px;}
+.project-list-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:12px;
+}
+.project-list-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:600;}
+.btn-new{
+  font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;
+  padding:7px 14px;border-radius:6px;border:none;
+  background:var(--accent);color:#fff;cursor:pointer;transition:all .15s;
+  display:flex;align-items:center;gap:6px;
+}
+.btn-new:hover{background:#1d4ed8;}
+
+/* project cards in list */
+.proj-cards{display:flex;flex-direction:column;gap:6px;}
+.proj-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:12px 16px;display:flex;align-items:center;gap:12px;
+  transition:box-shadow .15s;cursor:default;
+}
+.proj-card:hover{box-shadow:var(--shadow-md);}
+.proj-card-left{flex:1;min-width:0;}
+.proj-card-client{font-weight:600;font-size:12px;}
+.proj-card-meta{font-size:10px;color:var(--muted);margin-top:2px;}
+.proj-card-right{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.btn-card-edit{
+  padding:4px 10px;border-radius:5px;border:1px solid var(--border2);
+  background:transparent;color:var(--muted);cursor:pointer;font-size:10px;
+  font-family:'DM Mono',monospace;transition:all .13s;
+}
+.btn-card-edit:hover{border-color:var(--accent);color:var(--accent);}
+.btn-card-del{
+  padding:4px 10px;border-radius:5px;border:1px solid var(--border2);
+  background:transparent;color:var(--muted);cursor:pointer;font-size:10px;
+  font-family:'DM Mono',monospace;transition:all .13s;
+}
+.btn-card-del:hover{border-color:var(--red);color:var(--red);}
+
+/* ── MODAL FORM ── */
+.modal-overlay{
+  display:none;position:fixed;inset:0;z-index:500;
+  background:rgba(0,0,0,0.35);backdrop-filter:blur(3px);
+  align-items:flex-start;justify-content:center;padding:24px 16px;overflow-y:auto;
+}
+.modal-overlay.open{display:flex;}
+.modal{
+  background:var(--surface);border-radius:12px;
+  width:100%;max-width:820px;box-shadow:var(--shadow-md);
+  animation:slideUp .2s ease;
+  margin:auto;
+}
+@keyframes slideUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+.modal-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 24px;border-bottom:1px solid var(--border);
+}
+.modal-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;}
+.modal-close{
+  width:28px;height:28px;border-radius:50%;border:1px solid var(--border);
+  background:transparent;cursor:pointer;font-size:16px;color:var(--muted);
+  display:flex;align-items:center;justify-content:center;transition:all .13s;
+}
+.modal-close:hover{background:var(--red-bg);color:var(--red);border-color:var(--red);}
+.modal-body{padding:24px;display:flex;flex-direction:column;gap:0;}
+.modal-footer{
+  padding:16px 24px;border-top:1px solid var(--border);
+  display:flex;justify-content:flex-end;gap:10px;
+}
+
+/* Form sections */
+.form-section{margin-bottom:24px;}
+.form-section-title{
+  font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--accent);margin-bottom:12px;padding-bottom:6px;
+  border-bottom:1px solid var(--accent-light);
+}
+.form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+.form-grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
+.form-grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+.form-full{grid-column:1/-1;}
+.field{display:flex;flex-direction:column;gap:4px;}
+.field label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
+.field input,.field select,.field textarea{
+  padding:8px 10px;border:1px solid var(--border2);border-radius:6px;
+  font-family:'Inter',sans-serif;font-size:12px;
+  background:var(--surface2);color:var(--text);outline:none;transition:border .15s;
+}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent);background:#fff;}
+.field textarea{resize:vertical;min-height:72px;}
+.field select{cursor:pointer;}
+
+/* RAG selector */
+.rag-sel{display:flex;gap:6px;}
+.rag-opt{
+  flex:1;padding:7px 4px;border-radius:6px;border:2px solid var(--border2);
+  background:transparent;cursor:pointer;font-size:14px;text-align:center;
+  transition:all .13s;
+}
+.rag-opt:hover{border-color:var(--border2);transform:scale(1.05);}
+.rag-opt.sel-g{background:var(--green-bg);border-color:var(--green);}
+.rag-opt.sel-a{background:var(--amber-bg);border-color:var(--amber);}
+.rag-opt.sel-r{background:var(--red-bg);border-color:var(--red);}
+
+/* trend selector */
+.trend-sel{display:flex;gap:6px;}
+.trend-opt{
+  flex:1;padding:6px 4px;border-radius:6px;border:2px solid var(--border2);
+  background:transparent;cursor:pointer;font-size:13px;text-align:center;
+  transition:all .13s;font-weight:600;
+}
+.trend-opt.sel-t{background:var(--green-bg);border-color:var(--green);color:var(--green);}
+.trend-opt.sel-f{background:var(--surface3);border-color:var(--border2);color:var(--muted);}
+.trend-opt.sel-d{background:var(--red-bg);border-color:var(--red);color:var(--red);}
+
+/* form buttons */
+.btn-cancel{
+  padding:8px 18px;border-radius:6px;border:1px solid var(--border2);
+  background:transparent;color:var(--muted);cursor:pointer;font-family:'DM Mono',monospace;
+  font-size:10px;letter-spacing:.08em;text-transform:uppercase;transition:all .13s;
+}
+.btn-cancel:hover{border-color:var(--red);color:var(--red);}
+.btn-save{
+  padding:8px 20px;border-radius:6px;border:none;
+  background:var(--accent);color:#fff;cursor:pointer;font-family:'DM Mono',monospace;
+  font-size:10px;letter-spacing:.08em;text-transform:uppercase;transition:all .13s;
+}
+.btn-save:hover{background:#1d4ed8;}
+
+/* Toast */
+.toast{
+  position:fixed;bottom:24px;right:24px;z-index:999;
+  background:#111;color:#fff;padding:10px 18px;border-radius:8px;
+  font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.04em;
+  opacity:0;transform:translateY(8px);transition:all .25s;pointer-events:none;
+}
+.toast.show{opacity:1;transform:translateY(0);}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px;}
+
+.fade-in{animation:fadeIn .25s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+
+/* Filter search within entry page */
+.entry-search{
+  width:100%;max-width:280px;padding:7px 10px;border:1px solid var(--border2);border-radius:6px;
+  font-family:'Inter',sans-serif;font-size:12px;background:var(--surface2);
+  color:var(--text);outline:none;
+}
+.entry-search:focus{border-color:var(--accent);}
+</style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<nav>
+  <div>
+    <div class="nav-logo">
+      <div class="nav-dot"></div>
+      <div>
+        <div>AMARIS CONSULTING</div>
+        <div class="nav-sub">Global Delivery Health Tracker</div>
+      </div>
+    </div>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="switchPage('dashboard')">📊 Dashboard</button>
+    <button class="nav-tab" onclick="switchPage('entry')">✏️ Data Entry</button>
+  </div>
+  <div class="nav-right">
+    <select class="role-sel" id="roleSelect" onchange="currentRole=this.value;renderDashboard(getFiltered());">
+      <option value="PM">Role: PM</option>
+      <option value="DM">Role: DM</option>
+      <option value="DD">Role: DD</option>
+      <option value="CGD">Role: CGD</option>
+    </select>
+    <button class="btn-export" onclick="exportJSON()" style="background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600;" title="Save your work — download the JSON file after each session">⬇ Save (Export JSON)</button>
+    <button class="btn-import" onclick="document.getElementById('importFile').click()" title="Load a previously exported JSON file">⬆ Load JSON</button>
+    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJSON(event)">
+  </div>
+</nav>
+
+<!-- ════════════════════════════
+     DASHBOARD PAGE
+════════════════════════════ -->
+<div id="pageDashboard" class="page active">
+  <div class="kpi-strip" id="kpiStrip">
+    <div class="kpi"><div class="kpi-label">Total Projects</div><div class="kpi-value blue" id="kpiTotal">—</div><div class="kpi-sub">all regions</div></div>
+    <div class="kpi"><div class="kpi-label">Watch List</div><div class="kpi-value red" id="kpiWatch">—</div><div class="kpi-sub">amber or red</div></div>
+    <div class="kpi"><div class="kpi-label">Portfolio Revenue</div><div class="kpi-value blue" id="kpiRev">—</div><div class="kpi-sub">annual USD/EUR</div></div>
+    <div class="kpi"><div class="kpi-label">Avg YTD Margin</div><div class="kpi-value" id="kpiMargin">—</div><div class="kpi-sub">active projects</div></div>
+    <div class="kpi"><div class="kpi-label">Total FTEs</div><div class="kpi-value blue" id="kpiFte">—</div><div class="kpi-sub">headcount</div></div>
+    <div class="kpi"><div class="kpi-label">GDC Offshore</div><div class="kpi-value blue" id="kpiGdc">—</div><div class="kpi-sub">incl. GDC</div></div>
+  </div>
+
+  <div class="dash-body">
+    <aside class="sidebar">
+      <div>
+        <div class="filter-title">Search</div>
+        <input class="search-input" type="text" placeholder="Client, project, comment…" id="searchInput" oninput="applyFilters()">
+      </div>
+      <div class="fdivider"></div>
+      <div>
+        <div class="filter-title">Region</div>
+        <div class="filter-btns" id="fRegion"></div>
+      </div>
+      <div class="fdivider"></div>
+      <div>
+        <div class="filter-title">Entity / Country</div>
+        <div class="filter-btns" id="fEntity"></div>
+      </div>
+      <div class="fdivider"></div>
+      <div>
+        <div class="filter-title">Service Line</div>
+        <div class="filter-btns" id="fService"></div>
+      </div>
+      <div class="fdivider"></div>
+      <div>
+        <div class="filter-title">Delivery Manager</div>
+        <div class="filter-btns" id="fDm"></div>
+      </div>
+      <div class="fdivider"></div>
+      <div>
+        <div class="filter-title">Watch Status</div>
+        <div class="filter-btns">
+          <button class="fbtn" data-watch="🟢" onclick="toggleFilter(this,'watch')">🟢 Green</button>
+          <button class="fbtn" data-watch="🟡" onclick="toggleFilter(this,'watch')">🟡 Amber</button>
+          <button class="fbtn" data-watch="🔴" onclick="toggleFilter(this,'watch')">🔴 Red</button>
+        </div>
+      </div>
+      <div class="fdivider"></div>
+      <div>
+        <div class="filter-title">Trend</div>
+        <div class="filter-btns">
+          <button class="fbtn" data-trend="↑" onclick="toggleFilter(this,'trend')">↑ Up</button>
+          <button class="fbtn" data-trend="→" onclick="toggleFilter(this,'trend')">→ Flat</button>
+          <button class="fbtn" data-trend="↓" onclick="toggleFilter(this,'trend')">↓ Down</button>
+        </div>
+      </div>
+      <div class="fdivider"></div>
+      <button class="reset-btn" onclick="resetFilters()">↺ Reset all filters</button>
+    </aside>
+
+    <main class="dash-main">
+      <div class="dash-header">
+        <div class="results-count" id="resultsCount"></div>
+      </div>
+      <div id="dashContent"></div>
+    </main>
+  </div>
+
+  <footer>
+    <div class="footer-left">Amaris Consulting · Confidential · Internal Use Only</div>
+    <div class="footer-legend">
+      <div class="leg-item"><div class="leg-dot g"></div>Green — on track</div>
+      <div class="leg-item"><div class="leg-dot a"></div>Amber — watch</div>
+      <div class="leg-item"><div class="leg-dot r"></div>Red — at risk</div>
+    </div>
+  </footer>
+</div>
+
+<!-- ════════════════════════════
+     ENTRY PAGE
+════════════════════════════ -->
+<div id="pageEntry" class="page">
+  <div class="entry-page">
+    <div class="entry-page-header">
+      <div>
+        <div class="entry-title">Project Data Entry</div>
+        <div class="entry-subtitle">Add or edit projects · click <strong>Save (Export JSON)</strong> in the top bar after each session to keep your changes</div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <input class="entry-search" type="text" placeholder="Filter projects…" id="entrySearch" oninput="renderEntryList()">
+        <button class="btn-new" onclick="openForm(null)">＋ New Project</button>
+      </div>
+    </div>
+    <div class="proj-cards" id="entryList"></div>
+  </div>
+</div>
+
+
+<!-- ── WELCOME MODAL ── -->
+<div class="modal-overlay open" id="welcomeOverlay" style="background:rgba(0,0,0,0.5);">
+  <div class="modal" style="max-width:520px;margin:auto;">
+    <div class="modal-header">
+      <div class="modal-title">Welcome to the Delivery Tracker</div>
+    </div>
+    <div style="padding:28px 28px 20px;">
+      <p style="color:var(--text2);font-size:13px;line-height:1.7;margin-bottom:20px;">
+        This app stores data in <strong>JSON files</strong> — no server, no cloud.<br>
+        Each session, load your latest export to pick up where you left off.
+      </p>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <label style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border:1px solid var(--border2);border-radius:8px;cursor:pointer;transition:all .15s;" 
+               onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border2)'"
+               onclick="document.getElementById('welcomeFileInput').click()">
+          <div>
+            <div style="font-weight:600;font-size:13px;">📂 Load existing JSON file</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px;">Pick up from a previous session</div>
+          </div>
+          <span style="font-family:DM Mono,monospace;font-size:10px;color:var(--accent);letter-spacing:.06em;">BROWSE →</span>
+        </label>
+        <input type="file" id="welcomeFileInput" accept=".json" style="display:none" onchange="loadWelcomeFile(event)">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border:1px solid var(--border2);border-radius:8px;cursor:pointer;transition:all .15s;"
+             onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border2)'"
+             onclick="startFresh()">
+          <div>
+            <div style="font-weight:600;font-size:13px;">✨ Start with seed data</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px;">Pre-loaded with v5 Excel data (79 projects)</div>
+          </div>
+          <span style="font-family:DM Mono,monospace;font-size:10px;color:var(--green);letter-spacing:.06em;">LOAD →</span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border:1px solid var(--border2);border-radius:8px;cursor:pointer;transition:all .15s;"
+             onmouseover="this.style.borderColor='var(--muted)'" onmouseout="this.style.borderColor='var(--border2)'"
+             onclick="startEmpty()">
+          <div>
+            <div style="font-weight:600;font-size:13px;">📋 Start blank</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px;">Empty tracker — PMs enter all data</div>
+          </div>
+          <span style="font-family:DM Mono,monospace;font-size:10px;color:var(--muted);letter-spacing:.06em;">START →</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL FORM ── -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeFormOutside(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">New Project</div>
+      <button class="modal-close" onclick="closeForm()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody">
+      <!-- injected by JS -->
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeForm()">Cancel</button>
+      <button class="btn-save" onclick="saveForm()">Save Project</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════
+// REFERENCE DATA
+// ═══════════════════════════════════════════
+const REFS = {
+  regions: ['AMERICAS','EUROPE','ASIA'],
+  entities: {
+    AMERICAS: ['Brazil','Canada','Chile','Colombia','Mexico','Argentina','Peru','Ecuador','United States'],
+    EUROPE:   ['France','Germany','Italy','Portugal','Spain','UK','Belgium','Netherlands','Switzerland','Ireland'],
+    ASIA:     ['Australia','Singapore','Vietnam','India','Japan','China','Malaysia','Philippines','South Korea','Thailand','Spain']
+  },
+  serviceLines: ['1 - Data & AI','2 - Design & Development','3 - Digital Workplace','4 - Infra & Cyber','5 - Business Transformation','6 - Telco','7 - Engineering','8- LifeScience','ACT','SOLLAN','BAW'],
+  types: ['Skill Center','Service Center','Fixed Price','Work Unit','T&M'],
+  rag: ['🟢','🟡','🔴'],
+  trends: ['↑','→','↓'],
+  dms: ['Diana Henao','Franck','Giuseppe','Jeny Delgado','Ken LIU','Khoa','Khoi','Monica Ríos','Peter PEI','Renzo','Sandra Cristancho']
+};
+
+const REGION_META = {
+  AMERICAS: {emoji:'🌎', color:'#2563eb'},
+  EUROPE:   {emoji:'🌍', color:'#7c3aed'},
+  ASIA:     {emoji:'🌏', color:'#059669'},
+};
+
+// ═══════════════════════════════════════════
+// SEED DATA (from v5 Excel — 79 projects)
+// ═══════════════════════════════════════════
+const SEED_DATA = [{"region":"AMERICAS","entity":"Chile","client":"ESMAX","project":"Development Factory","serviceLine":"3 - Digital Workplace","type":"Service Center","watch":"\u{1f7e2}","currency":"USD","exec":{"finance":"\u{1f7e2}","team":"\u{1f7e2}","ops":"\u{1f7e2}","client":"\u{1f7e2}","trend":"\u2192"},"revenue":522100.0,"baseMargin":0.38,"ytdMargin":0.38,"currMargin":0.35,"marginTrend":"\u2192","targetMargin":0.38,"teamSize":85.0,"gdc":0.0,"ops":{"delivery":"\u{1f7e2}","consultants":"\u{1f7e2}","attrition":"\u{1f7e2}","ftesTrend":"\u2192","sla":"\u{1f7e2}","quality":"\u{1f7e2}","clientSat":"\u{1f7e2}","invoicing":"\u{1f7e2}","otherRisks":null},"comment":"It was agreed with the client that the PO and TL roles will be covered internally. Additionally, a commercial agreement was established positioning us as the exclusive provider, with a secured billing scheme for 9 months.","dm":"Giuseppe"},{"region":"AMERICAS","entity":"Chile","client":"FALABELLA","project":"Development Factory","serviceLine":"2 - Design & Development","type":"Skill Center","watch":"\u{1f7e2}","currency":"USD","exec":{"finance":"\u{1f7e2}","team":"\u{1f7e2}","ops":"\u{1f7e2}","client":"\u{1f7e2}","trend":"\u2192"},"revenue":1310939.0,"baseMargin":0.34,"ytdMargin":0.32,"currMargin":0.34,"marginTrend":"\u2192","targetMargin":0.35,"teamSize":50.0,"gdc":12.0,"ops":{"delivery":"\u{1f7e2}","consultants":"\u{1f7e1}","attrition":"\u{1f7e2}","ftesTrend":"\u2191","sla":"\u{1f7e2}","quality":"\u{1f7e2}","clientSat":"\u{1f7e2}","invoicing":"\u{1f7e2}","otherRisks":null},"comment":"Delivering a strong nearshoring service is a challenge, particularly when it comes to meeting employee experience expectations","dm":"Renzo"},{"region":"AMERICAS","entity":"Mexico","client":"PLUXEE INTERNAT","project":"OneAppV3 / Ecommerce / MerchantsApp / TM in Security and DevOps roles","serviceLine":"2 - Design & Development","type":"Skill Center","watch":"\u{1f7e2}","currency":"USD","exec":{"finance":"\u{1f7e1}","team":"\u{1f7e2}","ops":"\u{1f7e2}","client":"\u{1f7e2}","trend":"\u2191"},"revenue":1803251.0,"baseMargin":0.25,"ytdMargin":0.458,"currMargin":0.485,"marginTrend":"\u2191","targetMargin":0.39,"teamSize":25.0,"gdc":14.0,"ops":{"delivery":"\u{1f7e2}","consultants":"\u{1f7e2}","attrition":"\u{1f7e2}","ftesTrend":"\u2192","sla":null,"quality":"\u{1f7e2}","clientSat":"\u{1f7e2}","invoicing":"\u{1f7e1}","otherRisks":null},"comment":"-Very old invoices with no evidence of payment, currently under review between the finance teams of both companies. -Limitation of up to 220 billable days per year for consultants, which is lower than the number of working days in some countries, even after accounting for vacation time.","dm":"Diana Henao"},{"region":"AMERICAS","entity":"Chile","client":"PLUXEE CHILE","project":"QA Factory","serviceLine":"2 - Design & Development","type":"Skill Center","watch":"\u{1f7e2}","currency":"USD","exec":{"finance":"\u{1f7e2}","team":"\u{1f7e2}","ops":"\u{1f7e2}","client":"\u{1f7e2}","trend":"\u2192"},"revenue":570015.0,"baseMargin":0.25,"ytdMargin":0.338,"currMargin":0.264,"marginTrend":"\u2193","targetMargin":0.27,"teamSize":5.0,"gdc":5.0,"ops":{"delivery":"\u{1f7e2}","consultants":"\u{1f7e1}","attrition":"\u{1f534}","ftesTrend":"\u2191","sla":"\u{1f7e2}","quality":"\u{1f7e2}","clientSat":"\u{1f7e2}","invoicing":"\u{1f7e2}","otherRisks":null},"comment":"Two initiatives are expected to begin: a breastfeeding support group and a cashback program. The microservices migration initiative is currently on hold. The operation does not present any scope risks.","dm":""},{"region":"AMERICAS","entity":"Mexico","client":"PLUXEE MEXICO","project":"Scrum Master / DevOps / QA Engineer / Budget Coord.","serviceLine":"2 - Design & Development","type":"Skill Center","watch":"\u{1f7e2}","currency":"USD","exec":{"finance":"\u{1f7e2}","team":"\u{1f7e2}","ops":"\u{1f7e2}","client":"\u{1f7e2}","trend":"\u2192"},"revenue":284843.0,"baseMargin":0.25,"ytdMargin":0.387,"currMargin":0.4,"marginTrend":"\u2191","targetMargin":0.38,"teamSize":5.0,"gdc":2.0,"ops":{"delivery":"\u{1f7e2}","consultants":"\u{1f7e2}","attrition":"\u{1f7e2}","ftesTrend":"\u2192","sla":null,"quality":"\u{1f7e2}","clientSat":"\u{1f7e2}","invoicing":"\u{1f7e2}","otherRisks":null},"comment":"It is a stable, but closed client in terms of expanding positions and requesting fixed-scope project execution from us.","dm":""},{"region":"AMERICAS","entity":"Brazil","client":"L'OREAL/INFOSYS","project":"SUNRISE Program","serviceLine":"1 - Data & AI","type":"Skill Center","watch":"\u{1f7e1}","currency":"USD","exec":{"finance":"\u{1f7e2}","team":"\u{1f534}","ops":"\u{1f7e2}","client":"\u{1f7e2}","trend":"\u2193"},"revenue":472000.0,"baseMargin":0.45,"ytdMargin":0.45,"currMargin":0.45,"marginTrend":"\u2192","targetMargin":0.45,"teamSize":7.0,"gdc":0.0,"ops":{"delivery":"\u{1f7e1}","consultants":"\u{1f7e1}","attrition":"\u{1f534}","ftesTrend":"\u2193","sla":null,"quality":"\u{1f7e1}","clientSat":"\u{1f7e1}","invoicing":"\u{1f7e2}","otherRisks":"\u{1f7e1}"},"comment":"We are losing scope to infosys, which we are sub contract by them. Interetiong with new infosys CS not great which may impact the quality of the deliverables.","dm":""},{"region":"AMERICAS","entity":"Brazil","client":"L'OREAL","project":"SOLAR Program","serviceLine":"1 - Data & AI","type":"Skill Center","watch":"\u{1f7e2}","currency":"USD","exec":{"finance":"\u{1f7e2}","team":"\u{1f7e2}","ops":"\u{1f7e2}","client":"\u{1f7e2}","trend":"\u2192"},"revenue":100000.0,"baseMargin":0.3,"ytdMargin":0.3,"currMargin":0.3,"marginTrend":"\u2192","targetMargin":0.35,"teamSize":4.0,"gdc":0.0,"ops":{"delivery":"\u{1f7e2}","consultants":"\u{1f7e2}","attrition":"\u{1f7e2}","ftesTrend":"\u2193","sla":null,"quality":"\u{1f7e2}","clientSat":"\u{1f7e2}","invoicing":"\u{1f7e2}","otherRisks":"\u{1f7e1}"},"comment":"On time. Margin below estimate.Project finalizing and decreasing CSs","dm":""},{"region":"AMERICAS","entity":"Brazil","client":"L'OREAL","project":"Reconnection","serviceLine":"1 - Data & AI","type":"Skill Center","watch":"\u{1f7e2}","currency":"USD","exec":{"finance":"\u{1f7e2}","team":"\u{1f7e2}","ops":"\u{1f7e2}","client":"\u{1f7e2}","trend":"\u2192"},"revenue":45000.0,"baseMargin":0.3,"ytdMargin":0.3,"currMargin":0.3,"marginTrend":"\u2192","targetMargin":0.3,"teamSize":6.0,"gdc":0.0,"ops":{"delivery":"\u{1f7e2}","consultants":"\u{1f7e2}","attrition":"\u{1f7e2}","ftesTrend":"\u2192","sla":"\u{1f7e2}","quality":"\u{1f7e2}","clientSat":"\u{1f7e2}","invoicing":"\u{1f7e2}","otherRisks":null},"comment":"Delivered and closed. Currently just 1 PM as T&M.","dm":""},{"region":"AMERICAS","entity":"Colombia","client":"SURAMERICANA","project":"Development Factory","serviceLine":"2 - Design & Development","type":"Skill Center","watch":"\u{1f7e2}","currency":"USD","exec":{"finance":"\u{1f7e2}","team":"\u{1f7e2}","ops":"\u{1f7e2}","client":"\u{1f7e2}","trend":"\u2191"},"revenue":708261.91,"baseMargin":0.4,"ytdMargin":0.39,"currMargin":0.505,"marginTrend":"\u2193","targetMargin":0.448,"teamSize":20.0,"gdc":0.0,"ops":{"delivery":"\u{1f7e2}","consultants":"\u{1f7e2}","attrition":"\u{1f7e2}","ftesTrend":"\u2193","sla":"\u{1f7e2}","quality":"\u{1f7e2}","clientSat":"\u{1f7e2}","invoicing":null,"otherRisks":"\u{1f7e1}"},"comment":"Excellent margin. Model reference. Company recently has not to much budget, Some consultants are being retired (Note that is not about performance or quality)","dm":"Monica Rios"},{"region":"AMERICAS","entity":"Colombia","client":"MOBILIZE","project":"Development Factory","serviceLine":"2 - Design & Development","type":"Skill Center","watch":"\u{1f7e2}","currency":"USD","exec":{"finance":"\u{1f7e2}","team":"\u{1f7e2}","ops":"\u{1f7e2}","client":"\u{1f7e2}","trend":"\u2193"},"revenue":219800.84,"baseMargin":0.4,"ytdMargin":0.45,"currMargin":0.51,"marginTrend":"\u2193","targetMargin":0.49,"teamSize":8.0,"gdc":0.0,"ops":{"delivery":"\u{1f7e2}","consultants":"\u{1f7e2}","attrition":"\u{1f7e2}","ftesTrend":"\u2192","sla":"\u{1f7e2}","quality":"\u{1f7e2}","clientSat":"\u{1f7e2}","invoicing":null,"otherRisks":null},"comment":"Reduced margin to 49% based on salary increase of the consultants on the Client.","dm":"Jeny Delgado"},{"region":"AMERICAS","entity":"Colombia","client":"GSK GTN","project":"Development Factory","serviceLine":"2 - Design & Development","type":"Fixed Price","watch":null,"currency":"USD","exec":{"finance":null,"team":null,"ops":null,"client":null,"trend":"\u2192"},"revenue":172355.0,"baseMargin":0.4,"ytdMargin":null,"currMargin":0.479,"marginTrend":"\u2192","targetMargin":0.479,"teamSize":5.0,"gdc":0.0,"ops":{"delivery":"\u{1f7e2}","consultants":null,"attrition":null,"ftesTrend":"\u2192","sla":null,"quality":null,"clientSat":null,"invoicing":null,"otherRisks":null},"comment":"Soon to Start","dm":"Sandra Cristancho"},{"region":"AMERICAS","entity":"Canada","client":"CATERPILLAR","project":"Development Factory","serviceLine":"2 - Design & Development","type":"Skill Center","watch":"\u{1f7e2}","currency":"USD","exec":{"finance":"\u{1f7e2}","team":"\u{1f7e2}","ops":"\u{1f7e2}","client":"\u{1f7e2}","trend":"\u2192"},"revenue":151000.0,"baseMargin":0.38,"ytdMargin":0.4,"currMargin":0.38,"marginTrend":"\u2192","targetMargin":0.42,"teamSize":4.0,"gdc":0.0,"ops":{"delivery":"\u{1f7e2}","consultants":"\u{1f7e2}","attrition":"\u{1f7e2}","ftesTrend":null,"sla":"\u{1f7e2}","quality":"\u{1f7e2}","clientSat":"\u{1f7e2}","invoicing":"\u{1f7e2}","otherRisks":null},"comment":"","dm":""},{"region":"AMERICAS","entity":"Colombia","client":"GSK MED EVENTHUB","project":"Development Factory","serviceLine":"2 - Design & Development","type":"Fixed Price","watch":null,"currency":"USD","exec":{"finance":null,"team":null,"ops":null,"client":null,"trend":"\u2192"},"revenue":129079.47,"baseMargin":0.4,"ytdMargin":null,"currMargin":null,"marginTrend":"\u2192","targetMargin":0.4,"teamSize":5.0,"gdc":0.0,"ops":{"delivery":"\u{1f7e2}","consultants":null,"attrition":null,"ftesTrend":"\u2192","sla":null,"quality":null,"clientSat":null,"invoicing":null,"otherRisks":null},"comment":"Soon to Start. No Margin, since the team has not been chosen, no salary comparation yet","dm":"Sandra Cristancho"},{"region":"AMERICAS","entity":"Canada","client":"PCC","project":"AI Agentic","serviceLine":"1 - Data & AI","type":"Fixed Price","watch":"\u{1f7e2}","currency":"USD","exec":{"finance":"\u{1f7e2}","team":"\u{1f7e2}","ops":"\u{1f7e2}","client":"\u{1f7e2}","trend":"\u2192"},"revenue":99000.0,"baseMargin":0.4,"ytdMargin":0.38,"currMargin":0.35,"marginTrend":"\u2192","targetMargin":0.4,"teamSize":3.75,"gdc":0.0,"ops":{"delivery":"\u{1f7e1}","consultants":"\u{1f7e2}","attrition":"\u{1f7e2}","ftesTrend":"\u2192","sla":"\u{1f7e2}","quality":"\u{1f7e2}","clientSat":"\u{1f7e2}","invoicing":"\u{1f7e2}","otherRisks":null},"comment":"High performance. Delivered on time","dm":""},{"region":"AMERICAS","entity":"Brazil","client":"NISSAN","project":"AI PoC","serviceLine":"1 - Data & AI","type":"Fixed Price","watch":"\u{1f7e2}","currency":"USD","exec":{"finance":"\u{1f7e2}","team":"\u{1f7e2}","ops":"\u{1f7e2}","client":"\u{1f7e2}","trend":"\u2192"},"revenue":7400.0,"baseMargin":0.4,"ytdMargin":0.4,"currMargin":0.4,"marginTrend":"\u2192","targetMargin":0.4,"teamSize":2.0,"gdc":0.0,"ops":{"delivery":"\u{1f7e2}","consultants":"\u{1f7e2}","attrition":"\u{1f7e2}","ftesTrend":"\u2192","sla":"\u{1f7e2}","quality":"\u{1f7e2}","clientSat":"\u{1f7e2}","invoicing":"\u{1f7e2}","otherRisks":null},"comment":"High performance. Client satified undertanding how to move into the next steps","dm":""},{"region":"AMERICAS","entity":"Canada","client":"Sanofi","project":"Cleaning Validaton","serviceLine":"8- LifeScience","type":"Fixed Price","watch":"\u{1f7e2}","currency":"USD","exec":{"finance":"\u{1f7e1}","team":"\u{1f7e2}","ops":"\u{1f7e2}","client":"\u{1f7e2}","trend":"\u2193"},"revenue":250000.0,"baseMargin":null,"ytdMargin":null,"currMargin":null,"marginTrend":"\u2193","targetMargin":null,"teamSize":3.0,"gdc":0.0,"ops":{"delivery":"\u{1f7e1}","consultants":"\u{1f7e1}","attrition":"\u{1f7e2}","ftesTrend":"\u2193","sla":"\u{1f534}","quality":"\u{1f7e1}","clientSat":"\u{1f7e1}","invoicing":"\u{1f7e1}","otherRisks":null},"comment":"Project in closing phase. Key lessons learned around effort estimation accuracy and management discipline for fixed-price delivery. (Deviaton in time and cost)","dm":""},{"region":"EUROPE","entity":"France","client":"BYTEL","project":"PDS IOF","serviceLine":"6 - Telco","type":"Work Unit","watch":"\u{1f7e1}","currency":"EUR","exec":{"finance":null,"team":null,"ops":null,"client":null,"trend":null},"revenue":null,"baseMargin":null,"ytdMargin":null,"currMargin":null,"marginTrend":null,"targetMargin":null,"teamSize":null,"gdc":null,"ops":{"delivery":null,"consultants":null,"attrition":null,"ftesTrend":null,"sla":null,"quality":null,"clientSat":null,"invoicing":null,"otherRisks":null},"comment":"","dm":""},{"region":"EUROPE","entity":"France","client":"BYTEL","project":"PDA IOF","serviceLine":"6 - Telco","type":"Skill Center","watch":null,"currency":"EUR","exec":{"finance":null,"team":null,"ops":null,"client":null,"trend":null},"revenue":null,"baseMargin":null,"ytdMargin":null,"currMargin":null,"marginTrend":null,"targetMargin":null,"teamSize":null,"gdc":null,"ops":{"delivery":null,"consultants":null,"attrition":null,"ftesTrend":null,"sla":null,"quality":null,"clientSat":null,"invoicing":null,"otherRisks":null},"comment":"","dm":""},{"region":"EUROPE","entity":"France","client":"BYTEL","project":"PDS HDC (IDF)","serviceLine":"6 - Telco","type":"Work Unit","watch":null,"currency":"EUR","exec":{"finance":null,"team":null,"ops":null,"client":null,"trend":null},"revenue":null,"baseMargin":null,"ytdMargin":null,"currMargin":null,"marginTrend":null,"targetMargin":null,"teamSize":null,"gdc":null,"ops":{"delivery":null,"consultants":null,"attrition":null,"ftesTrend":null,"sla":null,"quality":null,"clientSat":null,"invoicing":null,"otherRisks":null},"comment":"","dm":""},{"region":"EUROPE","entity":"France","client":"BYTEL","project":"PDS HDC (TUN)","serviceLine":"6 - Telco","type":"Work Unit","watch":null,"currency":"EUR","exec":{"finance":null,"team":null,"ops":null,"client":null,"trend":null},"revenue":null,"baseMargin":null,"ytdMargin":null,"currMargin":null,"marginTrend":null,"targetMargin":null,"teamSize":null,"gdc":null,"ops":{"delivery":null,"consultants":null,"attrition":null,"ftesTrend":null,"sla":null,"quality":null,"clientSat":null,"invoicing":null,"otherRisks":null},"comment":"","dm":""},{"region":"EUROPE","entity":"France","client":"BYTEL","project":"PDA Patrimoine","serviceLine":"6 - Telco","type":"Skill Center","watch":null,"currency":"EUR","exec":{"finance":null,"team":null,"ops":null,"client":null,"trend":null},"revenue":null,"baseMargin":null,"ytdMargin":null,"currMargin":null,"marginTrend":null,"targetMargin":null,"teamSize":null,"gdc":null,"ops":{"delivery":null,"consultants":null,"attrition":null,"ftesTrend":null,"sla":null,"quality":null,"clientSat":null,"invoicing":null,"otherRisks":null},"comment":"","dm":""},{"region":"EUROPE","entity":"France","client":"BYTEL","project":"PDS GUB","serviceLine":"6 - Telco","type":"Work Unit","watch":null,"currency":"EUR","exec":{"finance":null,"team":null,"ops":null,"client":null,"trend":null},"revenue":null,"baseMargin":null,"ytdMargin":null,"currMargin":null,"marginTrend":null,"targetMargin":null,"teamSize":null,"gdc":null,"ops":{"delivery":null,"consultants":null,"attrition":null,"ftesTrend":null,"sla":null,"quality":null,"clientSat":null,"invoicing":null,"otherRisks":null},"comment":"","dm":""},{"region":"EUROPE","entity":"France","client":"BYTEL","project":"PDA Nego","serviceLine":"6 - Telco","type":"Skill Center","watch":null,"currency":"EUR","exec":{"finance":null,"team":null,"ops":null,"client":null,"trend":null},"revenue":null,"baseMargin":null,"ytdMargin":null,"currMargin":null,"marginTrend":null,"targetMargin":null,"teamSize":null,"gdc":null,"ops":{"delivery":null,"consultants":null,"attrition":null,"ftesTrend":null,"sla":null,"quality":null,"clientSat":null,"invoicing":null,"otherRisks":null},"comment":"","dm":""},{"region":"EUROPE","entity":"France","client":"BYTEL","project":"PDA Maintenance","serviceLine":"6 - Telco","type":"Skill Center","watch":null,"currency":"EUR","exec":{"finance":null,"team":null,"ops":null,"client":null,"trend":null},"revenue":null,"baseMargin":null,"ytdMargin":null,"currMargin":null,"marginTrend":null,"targetMargin":null,"teamSize":null,"gdc":null,"ops":{"delivery":null,"consultants":null,"attrition":null,"ftesTrend":null,"sla":null,"quality":null,"clientSat":null,"invoicing":null,"otherRisks":null},"comment":"","dm":""},{"region":"EUROPE","entity":"France","client":"BYTEL","project":"PDA Outils","serviceLine":"6 - Telco","type":"Skill Center","watch":null,"currency":"EUR","exec":{"finance":null,"team":null,"ops":null,"client":null,"trend":null},"revenue":null,"baseMargin":null,"ytdMargin":null,"currMargin":null,"marginTrend":null,"targetMargin":null,"teamSize":null,"gdc":null,"ops":{"delivery":null,"consultants":null,"attrition":null,"ftesTrend":null,"sla":null,"quality":null,"clientSat":null,"invoicing":null,"otherRisks":null},"comment":"","dm":""},{"region":"EUROPE","entity":"France","client":"BYTEL","project":"PDS DGP","serviceLine":"6 - Telco","type":"Work Unit","watch":null,"currency":"EUR","exec":{"finance":null,"team":null,"ops":null,"client":null,"trend":null},"revenue":null,"baseMargin":null,"ytdMargin":null,"currMargin":null,"marginTrend":null,"targetMargin":null,"teamSize":null,"gdc":null,"ops":{"delivery":null,"consultants":null,"attrition":null,"ftesTrend":null,"sla":null,"quality":null,"clientSat":null,"invoicing":null,"otherRisks":null},"comment":"","dm":""},{"region":"EUROPE","entity":"France","client":"BYTEL","project":"PDS CPL / GSP","serviceLine":"6 - Telco","type":"Work Unit","watch":null,"currency":"EUR","exec":{"finance":null,"team":null,"ops":null,"client":null,"trend":null},"revenue":null,"baseMargin":null,"ytdMargin":null,"currMargin":null,"marginTrend":null,"targetMargin":null,"teamSize":null,"gdc":null,"ops":{"delivery":null,"consultants":null,"attrition":null,"ftesTrend":null,"sla":null,"quality":null,"clientSat":null,"invoicing":null,"otherRisks":null},"comment":"","dm":""},{"region":"EUROPE","entity":"France","client":"BYTEL","project":"PDA CAMUNDA","serviceLine":"6 - Telco","type":"Skill Center","watch":null,"currency":"EUR","exec":{"finance":null,"team":null,"ops":null,"client":null,"trend":null},"revenue":null,"baseMargin":null,"ytdMargin":null,"currMargin":null,"marginTrend":null,"targetMargin":null,"teamSize":null,"gdc":null,"ops":{"delivery":null,"consultants":null,"attrition":null,"ftesTrend":null,"sla":null,"quality":null,"clientSat":null,"invoicing":null,"otherRisks":null},"comment":"","dm":""},{"region":"EUROPE","entity":"France","client":"BYTEL","project":"PDA DATA (IDF)","serviceLine":"6 - Telco","type":"Skill Center","watch":null,"currency":"EUR","exec":{"finance":null,"team":null,"ops":null,"client":null,"trend":null},"revenue":null,"baseMargin":null,"ytdMargin":null,"currMargin":null,"marginTrend":null,"targetMargin":null,"teamSize":null,"gdc":null,"ops":{"delivery":null,"consultants":null,"attrition":null,"ftesTrend":null,"sla":null,"quality":null,"clientSat":null,"invoicing":null,"otherRisks":null},"comment":"","dm":""},{"region":"EUROPE","entity":"France","client":"BYTEL","project":"PDA DATA (TUN)","serviceLine":"6 - Telco","type":"Skill Center","watch":null,"currency":"EUR","exec":{"finance":null,"team":null,"ops":null,"client":null,"trend":null},"revenue":null,"baseMargin":null,"ytdMargin":null,"currMargin":null,"marginTrend":null,"targetMargin":null,"teamSize":null,"gdc":null,"ops":{"delivery":null,"consultants":null,"attrition":null,"ftesTrend":null,"sla":null,"quality":null,"clientSat":null,"invoicing":null,"otherRisks":null},"comment":"","dm":""},{"region":"EUROPE","entity":"France","client":"BYTEL","project":"PDS ING","serviceLine":"6 - Telco","type":"Work Unit","watch":null,"currency":"EUR","exec":{"finance":null,"team":null,"ops":null,"client":null,"trend":null},"revenue":null,"baseMargin":null,"ytdMargin":null,"currMargin":null,"marginTrend":null,"targetMargin":null,"teamSize":null,"gdc":null,"ops":{"delivery":null,"consultants":null,"attrition":null,"ftesTrend":null,"sla":null,"quality":null,"clientSat":null,"invoicing":null,"otherRisks":null},"comment":"","dm":""},{"region":"EUROPE","entity":"France","client":"BYTEL","project":"PDS QOS","serviceLine":"6 - Telco","type":"Work Unit","watch":null,"currency":"EUR","exec":{"finance":null,"team":null,"ops":null,"client":null,"trend":null},"revenue":null,"baseMargin":null,"ytdMargin":null,"currMargin":null,"marginTrend":null,"targetMargin":null,"teamSize":null,"gdc":null,"ops":{"delivery":null,"consultants":null,"attrition":null,"ftesTrend":null,"sla":null,"quality":null,"clientSat":null,"invoicing":null,"otherRisks":null},"comment":"","dm":""},{"region":"EUROPE","entity":"France","client":"BYTEL","project":"PDS QA QOS","serviceLine":"6 - Telco","type":"Work Unit","watch":null,"currency":"EUR","exec":{"finance":null,"team":null,"ops":null,"client":null,"trend":null},"revenue":null,"baseMargin":null,"ytdMargin":null,"currMargin":null,"marginTrend":null,"targetMargin":null,"teamSize":null,"gdc":null,"ops":{"delivery":null,"consultants":null,"attrition":null,"ftesTrend":null,"sla":null,"quality":null,"clientSat":null,"invoicing":null,"otherRisks":null},"comment":"","dm":""},{"region":"EUROPE","entity":"France","client":"BYTEL","project":"PDS Validation livrables","serviceLine":"6 - Telco","type":"Work Unit","watch":null,"currency":"EUR","exec":{"finance":null,"team":null,"ops":null,"client":null,"trend":null},"revenue":null,"baseMargin":null,"ytdMargin":null,"currMargin":null,"marginTrend":null,"targetMargin":null,"teamSize":null,"gdc":null,"ops":{"delivery":null,"consultants":null,"attrition":null,"ftesTrend":null,"sla":null,"quality":null,"clientSat":null,"invoicing":null,"otherRisks":null},"comment":"","dm":""},{"region":"EUROPE","entity":"France","client":"BYTEL","project":"PDS prerequis FH","serviceLine":"6 - Telco","type":"Work Unit","watch":null,"currency":"EUR","exec":{"finance":null,"team":null,"ops":null,"client":null,"trend":null},"revenue":null,"baseMargin":null,"ytdMargin":null,"currMargin":null,"marginTrend":null,"targetMargin":null,"teamSize":null,"gdc":null,"ops":{"delivery":null,"consultants":null,"attrition":null,"ftesTrend":null,"sla":null,"quality":null,"clientSat":null,"invoicing":null,"otherRisks":null},"comment":"","dm":""},{"region":"EUROPE","entity":"France","client":"BYTEL","project":"PDA FTTH","serviceLine":"6 - Telco","type":"Skill Center","watch":null,"currency":"EUR","exec":{"finance":null,"team":null,"ops":null,"client":null,"trend":null},"revenue":null,"baseMargin":null,"ytdMargin":null,"currMargin":null,"marginTrend":null,"targetMargin":null,"teamSize":null,"gdc":null,"ops":{"delivery":null,"consultants":null,"attrition":null,"ftesTrend":null,"sla":null,"quality":null,"clientSat":null,"invoicing":null,"otherRisks":null},"comment":"","dm":""},{"region":"EUROPE","entity":"France","client":"BYTEL","project":"PDA FTTO","serviceLine":"6 - Telco","type":"Skill Center","watch":null,"currency":"EUR","exec":{"finance":null,"team":null,"ops":null,"client":null,"trend":null},"revenue":null,"baseMargin":null,"ytdMargin":null,"currMargin":null,"marginTrend":null,"targetMargin":null,"teamSize":null,"gdc":null,"ops":{"delivery":null,"consultants":null,"attrition":null,"ftesTrend":null,"sla":null,"quality":null,"clientSat":null,"invoicing":null,"otherRisks":null},"comment":"","dm":""},{"region":"EUROPE","entity":"France","client":"BYTEL","project":"PDA DCIM","serviceLine":"6 - Telco","type":"Skill Center","watch":null,"currency":"EUR","exec":{"finance":null,"team":null,"ops":null,"client":null,"trend":null},"revenue":null,"baseMargin":null,"ytdMargin":null,"currMargin":null,"marginTrend":null,"targetMargin":null,"teamSize":null,"gdc":null,"ops":{"delivery":null,"consultants":null,"attrition":null,"ftesTrend":null,"sla":null,"quality":null,"clientSat":null,"invoicing":null,"otherRisks":null},"comment":"","dm":""},{"region":"EUROPE","entity":"France","client":"BYTEL","project":"Front Back DI","serviceLine":"6 - Telco","type":"Skill Center","watch":null,"currency":"EUR","exec":{"finance":null,"team":null,"ops":null,"client":null,"trend":null},"revenue":null,"baseMargin":null,"ytdMargin":null,"currMargin":null,"marginTrend":null,"targetMargin":null,"teamSize":null,"gdc":null,"ops":{"delivery":null,"consultants":null,"attrition":null,"ftesTrend":null,"sla":null,"quality":null,"clientSat":null,"invoicing":null,"otherRisks":null},"comment":"","dm":""},{"region":"EUROPE","entity":"Switzerland","client":"Nestle","project":"IOT","serviceLine":"4 - Infra & Cyber","type":"Skill Center","watch":"\u{1f7e1}","currency":"EUR","exec":{"finance":"\u{1f7e2}","team":"\u{1f7e2}","ops":"\u{1f7e2}","client":"\u{1f7e2}","trend":"\u2192"},"revenue":null,"baseMargin":null,"ytdMargin":null,"currMargin":null,"marginTrend":null,"targetMargin":null,"teamSize":null,"gdc":null,"ops":{"delivery":null,"consultants":null,"attrition":null,"ftesTrend":null,"sla":null,"quality":null,"clientSat":null,"invoicing":null,"otherRisks":null},"comment":"","dm":""},{"region":"EUROPE","entity":"Switzerland","client":"Nestle","project":"SOC","serviceLine":"4 - Infra & Cyber","type":"Skill Center","watch":"\u{1f7e1}","currency":"EUR","exec":{"finance":"\u{1f7e2}","team":"\u{1f7e2}","ops":"\u{1f7e2}","client":"\u{1f7e2}","trend":"\u2192"},"revenue":null,"baseMargin":null,"ytdMargin":null,"currMargin":null,"marginTrend":null,"targetMargin":null,"teamSize":null,"gdc":null,"ops":{"delivery":null,"consultants":null,"attrition":null,"ftesTrend":null,"sla":null,"quality":null,"clientSat":null,"invoicing":null,"otherRisks":null},"comment":"","dm":""},{"region":"EUROPE","entity":"France","client":"ENEDIS","project":"MEC21 - DONNEE","serviceLine":"1 - Data & AI","type":"Skill Center","watch":"\u{1f534}","currency":"EUR","exec":{"finance":"\u{1f534}","team":"\u{1f7e1}","ops":"\u{1f7e2}","client":"\u{1f7e1}","trend":"\u2192"},"revenue":null,"baseMargin":null,"ytdMargin":null,"currMargin":null,"marginTrend":null,"targetMargin":null,"teamSize":null,"gdc":null,"ops":{"delivery":null,"consultants":null,"attrition":null,"ftesTrend":null,"sla":null,"quality":null,"clientSat":null,"invoicing":null,"otherRisks":null},"comment":"","dm":""},{"region":"EUROPE","entity":"France","client":"SOLVAY","project":"DSDS","serviceLine":"5 - Business Transformation","type":"Skill Center","watch":"\u{1f7e1}","currency":"EUR","exec":{"finance":"\u{1f7e2}","team":"\u{1f7e2}","ops":"\u{1f7e2}","client":"\u{1f7e1}","trend":"\u2192"},"revenue":null,"baseMargin":null,"ytdMargin":null,"currMargin":null,"marginTrend":null,"targetMargin":null,"teamSize":null,"gdc":null,"ops":{"delivery":null,"consultants":null,"attrition":null,"ftesTrend":null,"sla":null,"quality":null,"clientSat":null,"invoicing":null,"otherRisks":null},"comment":"","dm":""},{"region":"EUROPE","entity":"Switzerland","client":"ROLEX","project":"L3","serviceLine":"2 - Design & Development","type":"Skill Center","watch":"\u{1f7e1}","currency":"EUR","exec":{"finance":"\u{1f7e2}","team":"\u{1f7e2}","ops":"\u{1f7e2}","client":"\u{1f7e1}","trend":"\u2192"},"revenue":null,"baseMargin":null,"ytdMargin":null,"currMargin":null,"marginTrend":null,"targetMargin":null,"teamSize":null,"gdc":null,"ops":{"delivery":null,"consultants":null,"attrition":null,"ftesTrend":null,"sla":null,"quality":null,"clientSat":null,"invoicing":null,"otherRisks":null},"comment":"","dm":""},{"region":"EUROPE","entity":"Spain","client":"NOATUM","project":"PORTSIX","serviceLine":"2 - Design & Development","type":"Fixed Price","watch":"\u{1f534}","currency":"EUR","exec":{"finance":"\u{1f534}","team":"\u{1f7e1}","ops":"\u{1f7e1}","client":"\u{1f7e1}","trend":"\u2191"},"revenue":null,"baseMargin":null,"ytdMargin":null,"currMargin":null,"marginTrend":null,"targetMargin":null,"teamSize":null,"gdc":null,"ops":{"delivery":null,"consultants":null,"attrition":null,"ftesTrend":null,"sla":null,"quality":null,"clientSat":null,"invoicing":null,"otherRisks":null},"comment":"","dm":""},{"region":"ASIA","entity":"China","client":"Moet Hennessy","project":"APAC region DW projects","serviceLine":"3 - Digital Workplace","type":"Service Center","watch":"\u{1f7e2}","currency":"EUR","exec":{"finance":"\u{1f7e2}","team":"\u{1f7e2}","ops":"\u{1f7e1}","client":"\u{1f7e2}","trend":"\u2192"},"revenue":1126639.0,"baseMargin":0.25,"ytdMargin":0.21,"currMargin":0.33,"marginTrend":"\u2192","targetMargin":null,"teamSize":24.0,"gdc":null,"ops":{"delivery":"\u{1f7e2}","consultants":"\u{1f7e2}","attrition":"\u{1f7e2}","ftesTrend":"\u2192","sla":"\u{1f7e2}","quality":"\u{1f7e2}","clientSat":"\u{1f7e2}","invoicing":"\u{1f7e2}","otherRisks":"\u{1f7e2}"},"comment":"Project is expired in Dec 2026, pending on the result of MSA bidding","dm":"Ken LIU"},{"region":"ASIA","entity":"China","client":"LVMH Holding APAC 2026","project":"LVMH DW (SGP, HK)","serviceLine":"3 - Digital Workplace","type":"Service Center","watch":"\u{1f7e2}","currency":"EUR","exec":{"finance":"\u{1f7e2}","team":"\u{1f7e2}","ops":"\u{1f7e1}","client":"\u{1f7e2}","trend":"\u2192"},"revenue":346450.0,"baseMargin":0.28,"ytdMargin":0.2,"currMargin":0.26,"marginTrend":"\u2192","targetMargin":null,"teamSize":10.0,"gdc":null,"ops":{"delivery":"\u{1f7e2}","consultants":"\u{1f7e2}","attrition":"\u{1f7e2}","ftesTrend":"\u2192","sla":"\u{1f7e2}","quality":"\u{1f7e2}","clientSat":"\u{1f7e2}","invoicing":"\u{1f7e2}","otherRisks":"\u{1f7e1}"},"comment":"Project is expired in Dec 2026, pending on the result of MSA bidding","dm":"Ken LIU"},{"region":"ASIA","entity":"Japan","client":"W&J Japan 2026","project":"W&J DW","serviceLine":"3 - Digital Workplace","type":"Service Center","watch":"\u{1f7e2}","currency":"EUR","exec":{"finance":"\u{1f7e2}","team":"\u{1f7e2}","ops":"\u{1f7e1}","client":"\u{1f7e2}","trend":"\u2192"},"revenue":218095.0,"baseMargin":0.22,"ytdMargin":0.4,"currMargin":null,"marginTrend":"\u2191","targetMargin":null,"teamSize":8.0,"gdc":null,"ops":{"delivery":"\u{1f7e2}","consultants":"\u{1f7e2}","attrition":"\u{1f7e2}","ftesTrend":"\u2192","sla":"\u{1f7e2}","quality":"\u{1f7e2}","clientSat":"\u{1f7e2}","invoicing":"\u{1f7e2}","otherRisks":"\u{1f7e1}"},"comment":"Project is expired in Dec 2026, pending on the result of MSA bidding","dm":"Ken LIU"},{"region":"ASIA","entity":"Japan","client":"FASHION Japan 2026","project":"L2 Helpdesk","serviceLine":"3 - Digital Workplace","type":"Service Center","watch":"\u{1f7e2}","currency":"EUR","exec":{"finance":"\u{1f7e2}","team":"\u{1f7e2}","ops":"\u{1f7e1}","client":"\u{1f7e2}","trend":"\u2192"},"revenue":180901.0,"baseMargin":0.41,"ytdMargin":0.4,"currMargin":0.49,"marginTrend":"\u2191","targetMargin":null,"teamSize":2.0,"gdc":null,"ops":{"delivery":"\u{1f7e2}","consultants":"\u{1f7e2}","attrition":"\u{1f7e2}","ftesTrend":"\u2192","sla":"\u{1f7e2}","quality":"\u{1f7e2}","clientSat":"\u{1f7e2}","invoicing":"\u{1f7e2}","otherRisks":"\u{1f7e1}"},"comment":"Project is expired in Dec 2026, pending on the result of MSA bidding","dm":"Ken LIU"},{"region":"ASIA","entity":"China","client":"Bulgari Australia","project":"Bulgari AU Proximity","serviceLine":"3 - Digital Workplace","type":"Service Center","watch":"\u{1f7e2}","currency":"EUR","exec":{"finance":"\u{1f7e2}","team":"\u{1f7e2}","ops":"\u{1f7e2}","client":"\u{1f7e2}","trend":"\u2192"},"revenue":24240.0,"baseMargin":null,"ytdMargin":0.31,"currMargin":0.28,"marginTrend":"\u2192","targetMargin":null,"teamSize":1.0,"gdc":0.0,"ops":{"delivery":"\u{1f7e2}","consultants":"\u{1f7e2}","attrition":"\u{1f7e2}","ftesTrend":"\u2192","sla":"\u{1f7e2}","quality":"\u{1f7e2}","clientSat":"\u{1f7e2}","invoicing":"\u{1f7e2}","otherRisks":"\u{1f7e2}"},"comment":"Project will finish by end of April 2026.","dm":"Ken LIU"},{"region":"ASIA","entity":"China","client":"Berluti","project":"APAC Digital Workplace","serviceLine":"3 - Digital Workplace","type":"Service Center","watch":"\u{1f7e2}","currency":"EUR","exec":{"finance":"\u{1f7e2}","team":"\u{1f7e2}","ops":"\u{1f7e1}","client":"\u{1f7e2}","trend":"\u2192"},"revenue":81338.0,"baseMargin":0.22,"ytdMargin":0.21,"currMargin":0.34,"marginTrend":"\u2191","targetMargin":null,"teamSize":2.0,"gdc":0.0,"ops":{"delivery":"\u{1f7e2}","consultants":"\u{1f7e2}","attrition":"\u{1f7e2}","ftesTrend":"\u2192","sla":"\u{1f7e2}","quality":"\u{1f7e2}","clientSat":"\u{1f7e2}","invoicing":"\u{1f7e2}","otherRisks":"\u{1f7e2}"},"comment":"Project is expired in Dec 2026, confirming extension. (Berluti)","dm":"Ken LIU"},{"region":"ASIA","entity":"Japan","client":"Bulgari Japan Ltd.","project":"IS&D - L2 Support Engineer","serviceLine":"3 - Digital Workplace","type":"T&M","watch":"\u{1f7e2}","currency":"EUR","exec":{"finance":"\u{1f7e2}","team":"\u{1f7e2}","ops":"\u{1f7e2}","client":"\u{1f7e2}","trend":"\u2192"},"revenue":49083.0,"baseMargin":null,"ytdMargin":0.27,"currMargin":0.32,"marginTrend":"\u2191","targetMargin":null,"teamSize":1.0,"gdc":0.0,"ops":{"delivery":"\u{1f7e2}","consultants":"\u{1f7e2}","attrition":"\u{1f7e2}","ftesTrend":"\u2192","sla":"\u{1f7e2}","quality":"\u{1f7e2}","clientSat":"\u{1f7e2}","invoicing":"\u{1f7e2}","otherRisks":"\u{1f7e2}"},"comment":"Project is expired in Dec, confirming extension (W&J JPN)","dm":"Ken LIU"},{"region":"ASIA","entity":"Japan","client":"Tiffany & Co Japan Inc","project":"IS&D - Japan Proximity Support","serviceLine":"3 - Digital Workplace","type":"T&M","watch":"\u{1f7e2}","currency":"EUR","exec":{"finance":"\u{1f7e2}","team":"\u{1f7e2}","ops":"\u{1f7e2}","client":"\u{1f7e2}","trend":"\u2192"},"revenue":null,"baseMargin":null,"ytdMargin":null,"currMargin":null,"marginTrend":null,"targetMargin":null,"teamSize":1.0,"gdc":0.0,"ops":{"delivery":"\u{1f7e2}","consultants":"\u{1f7e2}","attrition":"\u{1f7e2}","ftesTrend":"\u2192","sla":"\u{1f7e2}","quality":"\u{1f7e2}","clientSat":"\u{1f7e2}","invoicing":"\u{1f7e2}","otherRisks":"\u{1f7e2}"},"comment":"","dm":"Ken LIU"},{"region":"ASIA","entity":"Japan","client":"LVMH Louis Vuitton GK","project":"IT support Engineer","serviceLine":"3 - Digital Workplace","type":"T&M","watch":"\u{1f7e2}","currency":"EUR","exec":{"finance":"\u{1f7e2}","team":"\u{1f7e2}","ops":"\u{1f7e1}","client":"\u{1f7e2}","trend":"\u2192"},"revenue":57712.0,"baseMargin":null,"ytdMargin":0.57,"currMargin":0.53,"marginTrend":"\u2192","targetMargin":null,"teamSize":1.0,"gdc":0.0,"ops":{"delivery":"\u{1f7e2}","consultants":"\u{1f7e2}","attrition":"\u{1f7e2}","ftesTrend":"\u2192","sla":"\u{1f7e2}","quality":"\u{1f7e2}","clientSat":"\u{1f7e2}","invoicing":"\u{1f7e2}","otherRisks":"\u{1f7e1}"},"comment":"Project is expired in Dec 2026, confirming extension. Holding JPN","dm":"Ken LIU"},{"region":"ASIA","entity":"Japan","client":"Christian Dior Couture","project":"L2 Proximity","serviceLine":"3 - Digital Workplace","type":"T&M","watch":"\u{1f7e2}","currency":"EUR","exec":{"finance":"\u{1f7e2}","team":"\u{1f7e2}","ops":"\u{1f7e2}","client":"\u{1f7e2}","trend":"\u2192"},"revenue":48995.0,"baseMargin":0.28,"ytdMargin":0.43,"currMargin":0.31,"marginTrend":"\u2192","targetMargin":null,"teamSize":1.0,"gdc":0.0,"ops":{"delivery":"\u{1f7e2}","consultants":"\u{1f7e2}","attrition":"\u{1f7e2}","ftesTrend":"\u2192","sla":"\u{1f7e2}","quality":"\u{1f7e2}","clientSat":"\u{1f7e2}","invoicing":"\u{1f7e2}","otherRisks":"\u{1f7e1}"},"comment":"Project is expired in Aug 2026, confirming extension. (CDC)","dm":"Ken LIU"},{"region":"ASIA","entity":"Japan","client":"Tiffany & Co Japan Inc","project":"IS&D - L2 Onsite Support Engineer and Coordinator","serviceLine":"3 - Digital Workplace","type":"T&M","watch":"\u{1f7e2}","currency":"EUR","exec":{"finance":"\u{1f7e2}","team":"\u{1f7e2}","ops":"\u{1f7e2}","client":"\u{1f7e2}","trend":"\u2192"},"revenue":41728.0,"baseMargin":null,"ytdMargin":0.34,"currMargin":0.29,"marginTrend":"\u2192","targetMargin":null,"teamSize":1.0,"gdc":0.0,"ops":{"delivery":"\u{1f7e2}","consultants":"\u{1f7e2}","attrition":"\u{1f7e2}","ftesTrend":"\u2192","sla":"\u{1f7e2}","quality":"\u{1f7e2}","clientSat":"\u{1f7e2}","invoicing":"\u{1f7e2}","otherRisks":"\u{1f7e1}"},"comment":"Project is expired in Sep 2026, confirming extension (Tiffany)","dm":"Ken LIU"},{"region":"ASIA","entity":"Japan","client":"Berluti JAPAN K.K.","project":"IS&D - L2, Onsite Support","serviceLine":"3 - Digital Workplace","type":"T&M","watch":"\u{1f7e2}","currency":"EUR","exec":{"finance":"\u{1f7e2}","team":"\u{1f7e2}","ops":"\u{1f7e2}","client":"\u{1f7e2}","trend":"\u2192"},"revenue":32771.0,"baseMargin":null,"ytdMargin":0.4,"currMargin":0.35,"marginTrend":"\u2192","targetMargin":null,"teamSize":1.0,"gdc":0.0,"ops":{"delivery":"\u{1f7e2}","consultants":"\u{1f7e2}","attrition":"\u{1f7e2}","ftesTrend":"\u2192","sla":"\u{1f7e2}","quality":"\u{1f7e2}","clientSat":"\u{1f7e2}","invoicing":"\u{1f7e2}","otherRisks":"\u{1f7e1}"},"comment":"Project is expired in Dec 2026, confirming extension. (Berluti JPN)","dm":"Ken LIU"},{"region":"ASIA","entity":"Japan","client":"Breitling Japan Ltd.","project":"Breitling - Helpdesk Engineer (Japan + PT)","serviceLine":"3 - Digital Workplace","type":"T&M","watch":"\u{1f7e2}","currency":"EUR","exec":{"finance":"\u{1f7e2}","team":"\u{1f7e2}","ops":"\u{1f7e2}","client":"\u{1f7e2}","trend":"\u2192"},"revenue":31649.0,"baseMargin":null,"ytdMargin":0.29,"currMargin":null,"marginTrend":null,"targetMargin":null,"teamSize":1.0,"gdc":0.0,"ops":{"delivery":"\u{1f7e2}","consultants":"\u{1f7e2}","attrition":"\u{1f7e2}","ftesTrend":"\u2192","sla":"\u{1f7e2}","quality":"\u{1f7e2}","clientSat":"\u{1f7e2}","invoicing":"\u{1f7e2}","otherRisks":"\u{1f7e1}"},"comment":"Project is expired in Jul 2026, confirming extension.","dm":"Ken LIU"},{"region":"ASIA","entity":"China","client":"PATAC","project":"Mobility-PATAC ADAS Test Engineer","serviceLine":"7 - Engineering","type":"Skill Center","watch":"\u{1f7e1}","currency":"EUR","exec":{"finance":"\u{1f534}","team":"\u{1f7e2}","ops":"\u{1f7e2}","client":"\u{1f7e1}","trend":"\u2192"},"revenue":250760.0,"baseMargin":null,"ytdMargin":0.15,"currMargin":0.05,"marginTrend":null,"targetMargin":null,"teamSize":3.0,"gdc":0.0,"ops":{"delivery":"\u{1f7e2}","consultants":"\u{1f7e2}","attrition":"\u{1f7e2}","ftesTrend":"\u2192","sla":"\u{1f7e2}","quality":"\u{1f7e2}","clientSat":"\u{1f7e1}","invoicing":"\u{1f7e2}","otherRisks":"\u{1f7e1}"},"comment":"","dm":"Peter PEI"},{"region":"ASIA","entity":"China","client":"PATAC","project":"IOT SW developement","serviceLine":"7 - Engineering","type":"Skill Center","watch":"\u{1f7e1}","currency":"EUR","exec":{"finance":"\u{1f534}","team":"\u{1f7e2}","ops":"\u{1f7e2}","client":"\u{1f7e1}","trend":"\u2192"},"revenue":18575.0,"baseMargin":null,"ytdMargin":0.26,"currMargin":0.16,"marginTrend":null,"targetMargin":null,"teamSize":3.0,"gdc":0.0,"ops":{"delivery":"\u{1f7e2}","consultants":"\u{1f7e2}","attrition":"\u{1f7e2}","ftesTrend":"\u2192","sla":"\u{1f7e2}","quality":"\u{1f7e2}","clientSat":"\u{1f7e1}","invoicing":"\u{1f7e2}","otherRisks":"\u{1f7e1}"},"comment":"","dm":"Peter PEI"},{"region":"ASIA","entity":"China","client":"GEELY","project":"Geely Engine calibration project","serviceLine":"7 - Engineering","type":"Skill Center","watch":"\u{1f7e2}","currency":"EUR","exec":{"finance":"\u{1f7e1}","team":"\u{1f7e2}","ops":"\u{1f7e2}","client":"\u{1f7e2}","trend":"\u2192"},"revenue":null,"baseMargin":null,"ytdMargin":null,"currMargin":null,"marginTrend":null,"targetMargin":null,"teamSize":5.0,"gdc":0.0,"ops":{"delivery":"\u{1f7e2}","consultants":"\u{1f7e2}","attrition":"\u{1f7e2}","ftesTrend":"\u2192","sla":"\u{1f7e2}","quality":"\u{1f7e2}","clientSat":"\u{1f7e2}","invoicing":"\u{1f7e2}","otherRisks":"\u{1f7e1}"},"comment":"Project closed, waiting final payment (rem. 20%) from client","dm":"Peter PEI"},{"region":"ASIA","entity":"China","client":"Saic Volkswagen","project":"Lamp EE/FOP/Test","serviceLine":"7 - Engineering","type":"T&M","watch":"\u{1f7e2}","currency":"EUR","exec":{"finance":"\u{1f7e2}","team":"\u{1f7e2}","ops":"\u{1f7e2}","client":"\u{1f7e2}","trend":"\u2192"},"revenue":null,"baseMargin":null,"ytdMargin":null,"currMargin":null,"marginTrend":null,"targetMargin":null,"teamSize":3.0,"gdc":0.0,"ops":{"delivery":"\u{1f7e2}","consultants":"\u{1f7e2}","attrition":"\u{1f7e2}","ftesTrend":"\u2192","sla":"\u{1f7e2}","quality":"\u{1f7e2}","clientSat":"\u{1f7e2}","invoicing":"\u{1f7e2}","otherRisks":"\u{1f7e2}"},"comment":"","dm":"Peter PEI"},{"region":"ASIA","entity":"China","client":"Audi China","project":"Tester","serviceLine":"7 - Engineering","type":"T&M","watch":"\u{1f7e2}","currency":"EUR","exec":{"finance":"\u{1f7e2}","team":"\u{1f7e2}","ops":"\u{1f7e2}","client":"\u{1f7e2}","trend":"\u2192"},"revenue":35221.0,"baseMargin":null,"ytdMargin":0.25,"currMargin":0.17,"marginTrend":"\u2192","targetMargin":null,"teamSize":3.0,"gdc":0.0,"ops":{"delivery":"\u{1f7e2}","consultants":"\u{1f7e2}","attrition":"\u{1f7e2}","ftesTrend":"\u2192","sla":"\u{1f7e2}","quality":"\u{1f7e2}","clientSat":"\u{1f7e2}","invoicing":"\u{1f7e2}","otherRisks":"\u{1f7e2}"},"comment":"Project already ended in Mar.2026, no extension","dm":"Peter PEI"},{"region":"ASIA","entity":"China","client":"Volkswagen China","project":"Engine design","serviceLine":"7 - Engineering","type":"Skill Center","watch":"\u{1f7e2}","currency":"EUR","exec":{"finance":"\u{1f7e2}","team":"\u{1f7e2}","ops":"\u{1f7e2}","client":"\u{1f7e2}","trend":"\u2192"},"revenue":21150.0,"baseMargin":null,"ytdMargin":0.31,"currMargin":0.3,"marginTrend":"\u2192","targetMargin":null,"teamSize":3.0,"gdc":0.0,"ops":{"delivery":"\u{1f7e2}","consultants":"\u{1f7e2}","attrition":"\u{1f7e2}","ftesTrend":"\u2192","sla":"\u{1f7e2}","quality":"\u{1f7e2}","clientSat":"\u{1f7e2}","invoicing":"\u{1f7e2}","otherRisks":"\u{1f7e1}"},"comment":"Contract 1.0 ending May, new contract 2.0 in purchasing process","dm":"Peter PEI"},{"region":"ASIA","entity":"China","client":"ZF China","project":"Software Development & Test","serviceLine":"7 - Engineering","type":"T&M","watch":"\u{1f7e2}","currency":"EUR","exec":{"finance":"\u{1f7e2}","team":"\u{1f7e2}","ops":"\u{1f7e2}","client":"\u{1f7e2}","trend":"\u2192"},"revenue":180705.0,"baseMargin":null,"ytdMargin":0.17,"currMargin":0.16,"marginTrend":"\u2192","targetMargin":null,"teamSize":5.0,"gdc":0.0,"ops":{"delivery":"\u{1f7e2}","consultants":"\u{1f7e2}","attrition":"\u{1f7e2}","ftesTrend":"\u2192","sla":"\u{1f7e2}","quality":"\u{1f7e2}","clientSat":"\u{1f7e2}","invoicing":"\u{1f7e2}","otherRisks":"\u{1f7e2}"},"comment":"","dm":"Peter PEI"},{"region":"ASIA","entity":"China","client":"Cummins EARD","project":"CUMMINS EARD Engine Technology Solution","serviceLine":"7 - Engineering","type":"Skill Center","watch":"\u{1f7e2}","currency":"EUR","exec":{"finance":"\u{1f7e2}","team":"\u{1f7e1}","ops":"\u{1f7e2}","client":"\u{1f7e2}","trend":"\u2192"},"revenue":248936.0,"baseMargin":0.12,"ytdMargin":0.34,"currMargin":0.45,"marginTrend":null,"targetMargin":null,"teamSize":12.0,"gdc":0.0,"ops":{"delivery":"\u{1f7e2}","consultants":"\u{1f7e2}","attrition":"\u{1f7e2}","ftesTrend":"\u2192","sla":"\u{1f7e1}","quality":"\u{1f7e2}","clientSat":"\u{1f7e1}","invoicing":"\u{1f7e2}","otherRisks":"\u{1f7e2}"},"comment":"The consultant amount is too small, turnover rate risk.","dm":"Peter PEI"},{"region":"ASIA","entity":"Thailand","client":"CHUBB","project":"Revamp & legacy migration","serviceLine":"2 - Design & Development","type":"Skill Center","watch":"\u{1f7e2}","currency":"EUR","exec":{"finance":"\u{1f7e2}","team":"\u{1f7e2}","ops":"\u{1f7e2}","client":"\u{1f7e2}","trend":"\u2192"},"revenue":429610.0,"baseMargin":0.28,"ytdMargin":0.43,"currMargin":0.48,"marginTrend":null,"targetMargin":null,"teamSize":25.0,"gdc":0.0,"ops":{"delivery":"\u{1f7e2}","consultants":"\u{1f7e2}","attrition":"\u{1f7e2}","ftesTrend":"\u2192","sla":"\u{1f7e2}","quality":"\u{1f7e2}","clientSat":"\u{1f7e2}","invoicing":"\u{1f7e2}","otherRisks":"\u{1f7e2}"},"comment":"closing now with 2 FTE remained support prod.","dm":"Franck"},{"region":"ASIA","entity":"Spain","client":"VERTI ASEGURADORA","project":"Mapfre - Verti - QA Automation service","serviceLine":"2 - Design & Development","type":"Service Center","watch":"\u{1f7e2}","currency":"EUR","exec":{"finance":"\u{1f7e2}","team":"\u{1f7e2}","ops":"\u{1f7e2}","client":"\u{1f7e2}","trend":"\u2191"},"revenue":15759.0,"baseMargin":0.41,"ytdMargin":0.4,"currMargin":0.38,"marginTrend":null,"targetMargin":null,"teamSize":2.0,"gdc":4.5,"ops":{"delivery":"\u{1f7e2}","consultants":"\u{1f7e2}","attrition":"\u{1f7e2}","ftesTrend":"\u2191","sla":"\u{1f7e2}","quality":"\u{1f7e2}","clientSat":"\u{1f7e2}","invoicing":"\u{1f7e2}","otherRisks":"\u{1f7e2}"},"comment":"1 CS 50% from Feb 05 2026, 2 CS 100%","dm":"Khoi"},{"region":"ASIA","entity":"Spain","client":"ISDIN","project":"ISDIN - Servicio de QA","serviceLine":"2 - Design & Development","type":"Service Center","watch":"\u{1f7e2}","currency":"EUR","exec":{"finance":"\u{1f7e2}","team":"\u{1f7e2}","ops":"\u{1f7e2}","client":"\u{1f7e2}","trend":"\u2193"},"revenue":1807.0,"baseMargin":0.19,"ytdMargin":0.18,"currMargin":0.21,"marginTrend":null,"targetMargin":null,"teamSize":0.5,"gdc":1.0,"ops":{"delivery":"\u{1f7e2}","consultants":"\u{1f7e2}","attrition":"\u{1f7e2}","ftesTrend":"\u2193","sla":"\u{1f7e2}","quality":"\u{1f7e2}","clientSat":"\u{1f7e2}","invoicing":"\u{1f7e2}","otherRisks":"\u{1f7e2}"},"comment":"+ 1 CS 50% from Feb 01 2026","dm":"Khoi"},{"region":"ASIA","entity":"Spain","client":"Mutua de propietarios","project":"QA Service Renovation + Foundation","serviceLine":"2 - Design & Development","type":"Service Center","watch":"\u{1f7e2}","currency":"EUR","exec":{"finance":"\u{1f7e2}","team":"\u{1f7e2}","ops":"\u{1f7e2}","client":"\u{1f7e2}","trend":"\u2191"},"revenue":1028.0,"baseMargin":0.08,"ytdMargin":0.08,"currMargin":null,"marginTrend":null,"targetMargin":null,"teamSize":5.5,"gdc":6.5,"ops":{"delivery":"\u{1f7e2}","consultants":"\u{1f7e2}","attrition":"\u{1f7e2}","ftesTrend":"\u2191","sla":"\u{1f7e2}","quality":"\u{1f7e2}","clientSat":"\u{1f7e2}","invoicing":"\u{1f7e2}","otherRisks":"\u{1f7e2}"},"comment":"+ 1 CS in project + 2 Go option -> Finalize onboarding date","dm":"Khoi"},{"region":"ASIA","entity":"Singapore","client":"KSL","project":"ePACC AMS & CRs","serviceLine":"2 - Design & Development","type":"Service Center","watch":"\u{1f7e2}","currency":"EUR","exec":{"finance":"\u{1f7e2}","team":"\u{1f7e1}","ops":"\u{1f7e2}","client":"\u{1f7e2}","trend":"\u2192"},"revenue":10035.0,"baseMargin":0.46,"ytdMargin":0.59,"currMargin":0.56,"marginTrend":null,"targetMargin":null,"teamSize":1.0,"gdc":1.0,"ops":{"delivery":"\u{1f7e2}","consultants":"\u{1f7e1}","attrition":"\u{1f7e2}","ftesTrend":"\u2192","sla":"\u{1f7e2}","quality":"\u{1f7e2}","clientSat":"\u{1f7e2}","invoicing":"\u{1f7e2}","otherRisks":"\u{1f7e2}"},"comment":"Original scope as well as 02 CR buckets delivered on time. UAT is in progress.","dm":"Khoa"},{"region":"ASIA","entity":"Vietnam","client":"MASAN","project":"Workday Implementation","serviceLine":"ACT","type":"Fixed Price","watch":"\u{1f534}","currency":"EUR","exec":{"finance":"\u{1f7e1}","team":"\u{1f7e1}","ops":"\u{1f534}","client":"\u{1f7e1}","trend":"\u2193"},"revenue":null,"baseMargin":0.56,"ytdMargin":null,"currMargin":null,"marginTrend":null,"targetMargin":null,"teamSize":14.0,"gdc":1.0,"ops":{"delivery":"\u{1f7e1}","consultants":"\u{1f7e1}","attrition":"\u{1f7e1}","ftesTrend":"\u2192","sla":"\u{1f7e1}","quality":"\u{1f7e1}","clientSat":"\u{1f7e1}","invoicing":"\u{1f534}","otherRisks":"\u{1f534}"},"comment":"End2End Testing phase. Risk: Test progress is extremely slow from Masan side. Group CEO requested to change approach from Big Bang to Pilot 1 BU. Workday functionality limitation of Time Tracking is a blocker.","dm":"Khoa"}];
+
+// ═══════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════
+const STORAGE_KEY = 'amaris_tracker_v2';
+let projects = [];
+let currentRole = 'PM';
+let editingId = null;
+let activeFilters = { regions:new Set(), entities:new Set(), services:new Set(), dms:new Set(), watch:new Set(), trends:new Set(), search:'' };
+
+// ═══════════════════════════════════════════
+// STORAGE — JSON file is the source of truth
+// ═══════════════════════════════════════════
+function loadData() {
+  projects = []; // start empty — welcome modal handles initial load
+}
+function saveData() {
+  // no-op: we don't auto-save. User must click Export JSON.
+}
+function exportJSON() {
+  const blob = new Blob([JSON.stringify(projects, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  const date = new Date().toISOString().slice(0,10);
+  const time = new Date().toTimeString().slice(0,5).replace(':','h');
+  a.download = 'amaris_tracker_' + date + '_' + time + '.json';
+  a.click();
+  showToast('✓ JSON saved — keep this file safe!');
+}
+function importJSON(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (Array.isArray(data)) {
+        projects = data.map((p,i) => ({ ...p, _id: p._id || ('p'+Date.now()+i) }));
+        refreshAll();
+        showToast('Loaded ' + projects.length + ' projects from ' + file.name);
+      }
+    } catch(err) { showToast('Invalid JSON file'); }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+// Welcome modal actions
+function loadWelcomeFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (Array.isArray(data)) {
+        projects = data.map((p,i) => ({ ...p, _id: p._id || ('p'+Date.now()+i) }));
+        document.getElementById('welcomeOverlay').classList.remove('open');
+        refreshAll();
+        showToast('Loaded ' + projects.length + ' projects from ' + file.name);
+      }
+    } catch(err) { showToast('Invalid JSON file — please try again'); }
+  };
+  reader.readAsText(file);
+}
+function startFresh() {
+  projects = SEED_DATA.map((p,i) => ({ ...p, _id: 'p' + i }));
+  document.getElementById('welcomeOverlay').classList.remove('open');
+  refreshAll();
+  showToast('Loaded 79 seed projects — remember to Export JSON after editing!');
+}
+function startEmpty() {
+  projects = [];
+  document.getElementById('welcomeOverlay').classList.remove('open');
+  refreshAll();
+  showToast('Blank tracker ready — click + New Project to begin');
+}
+
+// ═══════════════════════════════════════════
+// NAV
+// ═══════════════════════════════════════════
+function switchPage(p) {
+  document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
+  document.getElementById('page' + p.charAt(0).toUpperCase() + p.slice(1)).classList.add('active');
+  event.currentTarget.classList.add('active');
+  if (p === 'entry') renderEntryList();
+}
+
+// ═══════════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════════
+function buildFilterButtons() {
+  const regions = [...new Set(projects.map(p=>p.region))];
+  const entities = [...new Set(projects.map(p=>p.entity))].sort();
+  const services = [...new Set(projects.map(p=>p.serviceLine).filter(s=>s&&s!=='—'))].sort();
+  const dms = [...new Set(projects.map(p=>p.dm).filter(d=>d&&d.trim()))].sort();
+
+  const make = (container, items, attr, key) => {
+    container.innerHTML = '';
+    items.forEach(v => {
+      const b = document.createElement('button');
+      b.className = 'fbtn';
+      b.setAttribute(attr, v);
+      b.textContent = (key==='region'?(REGION_META[v]?.emoji||'')+' ':'')+v;
+      b.onclick = () => toggleFilter(b, key);
+      container.appendChild(b);
+    });
+  };
+  make(document.getElementById('fRegion'), regions, 'data-region', 'region');
+  make(document.getElementById('fEntity'), entities, 'data-entity', 'entity');
+  make(document.getElementById('fService'), services, 'data-service', 'service');
+  make(document.getElementById('fDm'), dms, 'data-dm', 'dm');
+}
+
+function toggleFilter(btn, type) {
+  const map = {
+    region: ['regions','data-region'],
+    entity: ['entities','data-entity'],
+    service: ['services','data-service'],
+    dm: ['dms','data-dm'],
+    watch: ['watch','data-watch'],
+    trend: ['trends','data-trend'],
+  };
+  const [setKey, attr] = map[type];
+  const val = btn.getAttribute(attr);
+  const ragMap = {'🟢':'g','🟡':'a','🔴':'r'};
+  if (activeFilters[setKey].has(val)) {
+    activeFilters[setKey].delete(val);
+    btn.classList.remove('active','r-active','a-active','g-active');
+  } else {
+    activeFilters[setKey].add(val);
+    btn.classList.remove('active','r-active','a-active','g-active');
+    if (ragMap[val]) btn.classList.add(ragMap[val]+'-active');
+    else btn.classList.add('active');
+  }
+  applyFilters();
+}
+
+function applyFilters() {
+  activeFilters.search = document.getElementById('searchInput').value.toLowerCase();
+  renderDashboard(getFiltered());
+}
+
+function getFiltered() {
+  return projects.filter(p => {
+    if (activeFilters.regions.size && !activeFilters.regions.has(p.region)) return false;
+    if (activeFilters.entities.size && !activeFilters.entities.has(p.entity)) return false;
+    if (activeFilters.services.size && !activeFilters.services.has(p.serviceLine)) return false;
+    if (activeFilters.dms.size && !activeFilters.dms.has(p.dm)) return false;
+    if (activeFilters.watch.size && !activeFilters.watch.has(p.watch)) return false;
+    if (activeFilters.trends.size && !activeFilters.trends.has(p.exec?.trend)) return false;
+    if (activeFilters.search) {
+      const hay = `${p.client} ${p.project} ${p.entity} ${p.comment} ${p.dm}`.toLowerCase();
+      if (!hay.includes(activeFilters.search)) return false;
+    }
+    return true;
+  });
+}
+
+function resetFilters() {
+  activeFilters = { regions:new Set(), entities:new Set(), services:new Set(), dms:new Set(), watch:new Set(), trends:new Set(), search:'' };
+  document.getElementById('searchInput').value = '';
+  document.querySelectorAll('.fbtn').forEach(b => b.classList.remove('active','r-active','a-active','g-active'));
+  applyFilters();
+}
+
+function renderDashboard(list) {
+  updateKPIs(list);
+  document.getElementById('resultsCount').textContent = list.length + ' project' + (list.length!==1?'s':'') + ' shown';
+  const container = document.getElementById('dashContent');
+  container.innerHTML = '';
+  if (!list.length) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-icon">⬡</div><div class="empty-text">No projects match the current filters.</div></div>';
+    return;
+  }
+  const byRegion = {};
+  list.forEach(p => { if (!byRegion[p.region]) byRegion[p.region]=[]; byRegion[p.region].push(p); });
+  Object.entries(byRegion).forEach(([region, items]) => {
+    const meta = REGION_META[region] || {emoji:'🌐',color:'#6b7280'};
+    const div = document.createElement('div');
+    div.className = 'region-group fade-in';
+    div.innerHTML = `
+      <div class="region-header">
+        <span style="font-size:17px">${meta.emoji}</span>
+        <span class="region-title" style="color:${meta.color}">${region}</span>
+        <span class="region-count">${items.length} projects</span>
+      </div>
+      ${buildTable(items)}`;
+    container.appendChild(div);
+  });
+}
+
+function buildTable(items) {
+  const showFin = ['DM','DD','CGD'].includes(currentRole);
+  const showOps = ['PM','DM'].includes(currentRole);
+  const canEdit = true; // all roles can edit for now
+
+  const rows = items.map(p => {
+    const watchCls = p.watch==='🔴'?'row-red':p.watch==='🟡'?'row-amber':'';
+    const wb = p.watch==='🔴'?`<span class="watch-badge wb-r">🔴 Risk</span>`:
+               p.watch==='🟡'?`<span class="watch-badge wb-a">🟡 Watch</span>`:
+               p.watch==='🟢'?`<span class="watch-badge wb-g">🟢 OK</span>`:'<span style="color:var(--muted);font-size:10px">—</span>';
+    const rag = v => v ? `<span class="rag ${v==='🟢'?'rag-g':v==='🟡'?'rag-a':'rag-r'}">${v}</span>` : '<span style="color:var(--muted)">—</span>';
+    const trend = v => !v?'<span style="color:var(--muted)">—</span>': v==='↑'?`<span class="trend-up">↑</span>`:v==='↓'?`<span class="trend-dn">↓</span>`:`<span class="trend-fl">→</span>`;
+    const margin = v => {
+      if (v===null||v===undefined) return '<span style="color:var(--muted);font-size:10px">—</span>';
+      const pct = (v*100).toFixed(1)+'%';
+      const cls = v<0.15?'m-low':v<0.28?'m-mid':'m-hi';
+      return `<span class="mpill ${cls}">${pct}</span>`;
+    };
+    const rev = (v,c) => {
+      if (!v) return '<span style="color:var(--muted);font-size:10px">—</span>';
+      const fmt = v>=1000000?(v/1000000).toFixed(1)+'M':(v/1000).toFixed(0)+'K';
+      return `<span class="rev-txt">${c||'USD'} ${fmt}</span>`;
+    };
+    const sl = p.serviceLine && p.serviceLine!=='—' ? p.serviceLine.replace(/^\d+ - /,'') : p.serviceLine||'—';
+    const dmShort = (p.dm||'').split(/[,\/]/)[0].trim() || '—';
+    return `<tr class="${watchCls}">
+      <td><div class="client-name">${p.client}</div><div class="project-name">${p.project||'—'}</div></td>
+      <td><span class="entity-tag">${p.entity}</span></td>
+      <td><span class="sl-text">${sl}</span></td>
+      <td>${wb}</td>
+      <td><div class="rag-row">${rag(p.exec?.finance)}${rag(p.exec?.team)}${rag(p.exec?.ops)}${rag(p.exec?.client)}</div></td>
+      <td>${trend(p.exec?.trend)}</td>
+      ${showFin?`<td>${rev(p.revenue,p.currency)}</td><td>${margin(p.ytdMargin)}</td>`:''}
+      <td><span class="team-num">${p.teamSize??'—'}</span></td>
+      <td><span style="font-size:10px;color:var(--muted)">${p.gdc??'—'}</span></td>
+      ${showOps?`<td>${rag(p.ops?.sla)}</td><td>${rag(p.ops?.quality)}</td>`:''}
+      <td><span class="dm-txt" title="${p.dm||''}">${dmShort}</span></td>
+      <td><div class="comment-txt" title="${(p.comment||'').replace(/"/g,"'")}">${p.comment||'—'}</div></td>
+      <td><button class="btn-edit-row" onclick="openForm('${p._id}')">Edit</button></td>
+    </tr>`;
+  }).join('');
+
+  return `<table class="proj-table">
+    <thead><tr>
+      <th>Client / Project</th><th>Entity</th><th>Service Line</th>
+      <th>Watch</th><th>Exec Summary</th><th>Trend</th>
+      ${showFin?'<th>Revenue</th><th>YTD Margin</th>':''}
+      <th>FTEs</th><th>GDC</th>
+      ${showOps?'<th>SLA</th><th>Quality</th>':''}
+      <th>DM</th><th>Comment</th><th></th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
+function updateKPIs(list) {
+  const active = list.filter(p=>p.revenue);
+  const watchN = list.filter(p=>p.watch==='🔴'||p.watch==='🟡').length;
+  const totalRev = active.reduce((s,p)=>s+(p.revenue||0),0);
+  const margins = active.filter(p=>p.ytdMargin!==null&&p.ytdMargin!==undefined);
+  const avgM = margins.length ? margins.reduce((s,p)=>s+p.ytdMargin,0)/margins.length : null;
+  const totalFte = list.reduce((s,p)=>s+(p.teamSize||0),0);
+  const totalGdc = list.reduce((s,p)=>s+(p.gdc||0),0);
+
+  document.getElementById('kpiTotal').textContent = list.length;
+  document.getElementById('kpiWatch').textContent = watchN;
+  document.getElementById('kpiRev').textContent = totalRev>=1000000?'$'+(totalRev/1000000).toFixed(2)+'M':'$'+(totalRev/1000).toFixed(0)+'K';
+  const kM = document.getElementById('kpiMargin');
+  if (avgM!==null) {
+    kM.textContent = (avgM*100).toFixed(1)+'%';
+    kM.className = 'kpi-value '+(avgM<0.15?'red':avgM<0.28?'amber':'green');
+  } else { kM.textContent='—'; kM.className='kpi-value blue'; }
+  document.getElementById('kpiFte').textContent = Math.round(totalFte)||'—';
+  document.getElementById('kpiGdc').textContent = Math.round(totalGdc)||'—';
+}
+
+// ═══════════════════════════════════════════
+// ENTRY LIST
+// ═══════════════════════════════════════════
+function renderEntryList() {
+  const q = (document.getElementById('entrySearch')?.value||'').toLowerCase();
+  const list = projects.filter(p => {
+    if (!q) return true;
+    return `${p.client} ${p.project} ${p.entity} ${p.region}`.toLowerCase().includes(q);
+  });
+  const container = document.getElementById('entryList');
+  container.innerHTML = '';
+  if (!list.length) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">No projects yet. Click "+ New Project" to add one.</div></div>';
+    return;
+  }
+  // Group by region
+  const byR = {};
+  list.forEach(p => { if(!byR[p.region]) byR[p.region]=[]; byR[p.region].push(p); });
+  Object.entries(byR).forEach(([region,items]) => {
+    const meta = REGION_META[region]||{emoji:'🌐',color:'#6b7280'};
+    const hdr = document.createElement('div');
+    hdr.style.cssText='font-family:Syne,sans-serif;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:8px 0 6px;color:'+meta.color+';display:flex;align-items:center;gap:6px;';
+    hdr.innerHTML = `${meta.emoji} ${region} <span style="font-weight:400;font-size:10px;color:var(--muted);font-family:DM Mono,monospace">${items.length} projects</span>`;
+    container.appendChild(hdr);
+    items.forEach(p => {
+      const card = document.createElement('div');
+      card.className = 'proj-card';
+      const wb = p.watch==='🔴'?`<span style="font-size:11px">🔴</span>`:p.watch==='🟡'?`<span style="font-size:11px">🟡</span>`:p.watch==='🟢'?`<span style="font-size:11px">🟢</span>`:'';
+      card.innerHTML = `
+        <div class="proj-card-left">
+          <div class="proj-card-client">${wb} ${p.client}</div>
+          <div class="proj-card-meta">${p.project||'—'} · ${p.entity} · ${p.serviceLine||'—'} · ${p.type||'—'} ${p.dm?'· '+p.dm:''}</div>
+        </div>
+        <div class="proj-card-right">
+          <button class="btn-card-edit" onclick="openForm('${p._id}')">✏ Edit</button>
+          <button class="btn-card-del" onclick="deleteProject('${p._id}')">✕ Delete</button>
+        </div>`;
+      container.appendChild(card);
+    });
+  });
+}
+
+function deleteProject(id) {
+  if (!confirm('Delete this project?')) return;
+  projects = projects.filter(p=>p._id!==id);
+  saveData();
+  refreshAll();
+  showToast('Project deleted');
+}
+
+// ═══════════════════════════════════════════
+// FORM
+// ═══════════════════════════════════════════
+function openForm(id) {
+  editingId = id;
+  const p = id ? projects.find(x=>x._id===id) : null;
+  document.getElementById('modalTitle').textContent = p ? 'Edit Project' : 'New Project';
+
+  const sel = (opts, val, placeholder) => {
+    const def = placeholder ? `<option value="">${placeholder}</option>` : '';
+    return opts.map(o => `<option value="${o}" ${o===val?'selected':''}>${o}</option>`).join('');
+  };
+
+  const ragSel = (name, val) => `
+    <div class="rag-sel">
+      <button type="button" class="rag-opt ${val==='🟢'?'sel-g':''}" onclick="setRag('${name}','🟢',this)">🟢</button>
+      <button type="button" class="rag-opt ${val==='🟡'?'sel-a':''}" onclick="setRag('${name}','🟡',this)">🟡</button>
+      <button type="button" class="rag-opt ${val==='🔴'?'sel-r':''}" onclick="setRag('${name}','🔴',this)">🔴</button>
+      <input type="hidden" name="${name}" value="${val||''}">
+    </div>`;
+
+  const trendSel = (name, val) => `
+    <div class="trend-sel">
+      <button type="button" class="trend-opt ${val==='↑'?'sel-t':''}" onclick="setTrend('${name}','↑',this)">↑</button>
+      <button type="button" class="trend-opt ${val==='→'?'sel-f':''}" onclick="setTrend('${name}','→',this)">→</button>
+      <button type="button" class="trend-opt ${val==='↓'?'sel-d':''}" onclick="setTrend('${name}','↓',this)">↓</button>
+      <input type="hidden" name="${name}" value="${val||''}">
+    </div>`;
+
+  // Determine entity list based on region
+  const regionVal = p?.region || '';
+  const entityOpts = regionVal ? (REFS.entities[regionVal]||[]) : Object.values(REFS.entities).flat();
+
+  document.getElementById('modalBody').innerHTML = `
+  <form id="projForm">
+  <!-- IDENTIFICATION -->
+  <div class="form-section">
+    <div class="form-section-title">Project Identification</div>
+    <div class="form-grid">
+      <div class="field">
+        <label>Region *</label>
+        <select name="region" required onchange="updateEntityList(this)">
+          <option value="">Select region…</option>
+          ${sel(REFS.regions, p?.region)}
+        </select>
+      </div>
+      <div class="field">
+        <label>Entity / Country *</label>
+        <select name="entity" id="entitySelect" required>
+          <option value="">Select entity…</option>
+          ${(regionVal ? REFS.entities[regionVal]||[] : []).map(e=>`<option value="${e}" ${e===p?.entity?'selected':''}>${e}</option>`).join('')}
+        </select>
+      </div>
+      <div class="field">
+        <label>Currency</label>
+        <select name="currency">
+          <option value="USD" ${(p?.currency||'USD')==='USD'?'selected':''}>USD</option>
+          <option value="EUR" ${p?.currency==='EUR'?'selected':''}>EUR</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Client *</label>
+        <input type="text" name="client" value="${p?.client||''}" placeholder="Client name" required>
+      </div>
+      <div class="field form-full">
+        <label>Project / Service</label>
+        <input type="text" name="project" value="${p?.project||''}" placeholder="Project or service name">
+      </div>
+      <div class="field">
+        <label>Service Line</label>
+        <select name="serviceLine">
+          <option value="">Select…</option>
+          ${sel(REFS.serviceLines, p?.serviceLine)}
+        </select>
+      </div>
+      <div class="field">
+        <label>Type</label>
+        <select name="type">
+          <option value="">Select…</option>
+          ${sel(REFS.types, p?.type)}
+        </select>
+      </div>
+      <div class="field">
+        <label>Delivery Manager</label>
+        <input type="text" name="dm" list="dmList" value="${p?.dm||''}" placeholder="DM name">
+        <datalist id="dmList">${REFS.dms.map(d=>`<option value="${d}">`).join('')}</datalist>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXECUTIVE SUMMARY -->
+  <div class="form-section">
+    <div class="form-section-title">Global Executive Summary</div>
+    <div class="form-grid-4">
+      <div class="field"><label>Watch List</label>${ragSel('watch', p?.watch)}</div>
+      <div class="field"><label>Finance</label>${ragSel('exec_finance', p?.exec?.finance)}</div>
+      <div class="field"><label>Team</label>${ragSel('exec_team', p?.exec?.team)}</div>
+      <div class="field"><label>Ops</label>${ragSel('exec_ops', p?.exec?.ops)}</div>
+      <div class="field"><label>Client</label>${ragSel('exec_client', p?.exec?.client)}</div>
+      <div class="field"><label>Global Trend</label>${trendSel('exec_trend', p?.exec?.trend)}</div>
+    </div>
+  </div>
+
+  <!-- FINANCIAL -->
+  <div class="form-section">
+    <div class="form-section-title">Financial</div>
+    <div class="form-grid">
+      <div class="field"><label>Annual Revenue</label><input type="number" name="revenue" value="${p?.revenue??''}" placeholder="e.g. 500000" step="0.01"></div>
+      <div class="field"><label>Baseline Margin (%)</label><input type="number" name="baseMargin" value="${p?.baseMargin!==null&&p?.baseMargin!==undefined?(p.baseMargin*100).toFixed(1):''}" placeholder="e.g. 35" step="0.1" min="0" max="100"></div>
+      <div class="field"><label>YTD Margin (%)</label><input type="number" name="ytdMargin" value="${p?.ytdMargin!==null&&p?.ytdMargin!==undefined?(p.ytdMargin*100).toFixed(1):''}" placeholder="e.g. 32" step="0.1" min="0" max="100"></div>
+      <div class="field"><label>Current Month Margin (%)</label><input type="number" name="currMargin" value="${p?.currMargin!==null&&p?.currMargin!==undefined?(p.currMargin*100).toFixed(1):''}" placeholder="e.g. 34" step="0.1" min="0" max="100"></div>
+      <div class="field"><label>Target Margin (%)</label><input type="number" name="targetMargin" value="${p?.targetMargin!==null&&p?.targetMargin!==undefined?(p.targetMargin*100).toFixed(1):''}" placeholder="e.g. 38" step="0.1" min="0" max="100"></div>
+      <div class="field"><label>Margin Trend</label>${trendSel('marginTrend', p?.marginTrend)}</div>
+    </div>
+  </div>
+
+  <!-- TEAM -->
+  <div class="form-section">
+    <div class="form-section-title">Team</div>
+    <div class="form-grid-4">
+      <div class="field"><label>Team Size (FTEs)</label><input type="number" name="teamSize" value="${p?.teamSize??''}" placeholder="e.g. 10" step="0.5" min="0"></div>
+      <div class="field"><label>Incl. GDC</label><input type="number" name="gdc" value="${p?.gdc??''}" placeholder="e.g. 5" step="0.5" min="0"></div>
+      <div class="field"><label>Delivery</label>${ragSel('ops_delivery', p?.ops?.delivery)}</div>
+      <div class="field"><label>Consultants</label>${ragSel('ops_consultants', p?.ops?.consultants)}</div>
+      <div class="field"><label>Attrition</label>${ragSel('ops_attrition', p?.ops?.attrition)}</div>
+      <div class="field"><label>FTEs Trend</label>${trendSel('ops_ftesTrend', p?.ops?.ftesTrend)}</div>
+    </div>
+  </div>
+
+  <!-- OPERATIONS & RISKS -->
+  <div class="form-section">
+    <div class="form-section-title">Operations & Risks</div>
+    <div class="form-grid-4">
+      <div class="field"><label>SLA / OTD</label>${ragSel('ops_sla', p?.ops?.sla)}</div>
+      <div class="field"><label>Quality</label>${ragSel('ops_quality', p?.ops?.quality)}</div>
+      <div class="field"><label>Client Satisfaction</label>${ragSel('ops_clientSat', p?.ops?.clientSat)}</div>
+      <div class="field"><label>Invoicing / Contract</label>${ragSel('ops_invoicing', p?.ops?.invoicing)}</div>
+      <div class="field"><label>Other Risks</label>${ragSel('ops_otherRisks', p?.ops?.otherRisks)}</div>
+    </div>
+    <div style="margin-top:12px">
+      <div class="field">
+        <label>Comments & Action Plan</label>
+        <textarea name="comment" placeholder="Describe current status, risks, and planned actions…">${p?.comment||''}</textarea>
+      </div>
+    </div>
+  </div>
+  </form>`;
+
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function updateEntityList(sel) {
+  const region = sel.value;
+  const entitySel = document.getElementById('entitySelect');
+  const opts = REFS.entities[region] || [];
+  entitySel.innerHTML = '<option value="">Select entity…</option>' + opts.map(e=>`<option value="${e}">${e}</option>`).join('');
+}
+
+function setRag(name, val, btn) {
+  const wrap = btn.parentElement;
+  wrap.querySelectorAll('.rag-opt').forEach(b => b.classList.remove('sel-g','sel-a','sel-r'));
+  const map = {'🟢':'sel-g','🟡':'sel-a','🔴':'sel-r'};
+  // toggle off if same
+  const hidden = wrap.querySelector(`input[name="${name}"]`);
+  if (hidden.value === val) {
+    hidden.value = '';
+  } else {
+    btn.classList.add(map[val]);
+    hidden.value = val;
+  }
+}
+
+function setTrend(name, val, btn) {
+  const wrap = btn.parentElement;
+  wrap.querySelectorAll('.trend-opt').forEach(b => b.classList.remove('sel-t','sel-f','sel-d'));
+  const map = {'↑':'sel-t','→':'sel-f','↓':'sel-d'};
+  const hidden = wrap.querySelector(`input[name="${name}"]`);
+  if (hidden.value === val) {
+    hidden.value = '';
+  } else {
+    btn.classList.add(map[val]);
+    hidden.value = val;
+  }
+}
+
+function closeForm() {
+  document.getElementById('modalOverlay').classList.remove('open');
+  editingId = null;
+}
+
+function closeFormOutside(e) {
+  if (e.target === document.getElementById('modalOverlay')) closeForm();
+}
+
+function saveForm() {
+  const form = document.getElementById('projForm');
+  if (!form.checkValidity()) { form.reportValidity(); return; }
+  const fd = new FormData(form);
+  const g = name => fd.get(name) || null;
+  const pct = name => { const v = fd.get(name); return v!==null&&v!==''?parseFloat(v)/100:null; };
+  const num = name => { const v = fd.get(name); return v!==null&&v!==''?parseFloat(v):null; };
+
+  const proj = {
+    _id: editingId || ('p' + Date.now()),
+    region: g('region'),
+    entity: g('entity'),
+    client: g('client'),
+    project: g('project') || '—',
+    serviceLine: g('serviceLine') || '—',
+    type: g('type') || '—',
+    watch: g('watch'),
+    currency: g('currency') || 'USD',
+    exec: {
+      finance: g('exec_finance'),
+      team: g('exec_team'),
+      ops: g('exec_ops'),
+      client: g('exec_client'),
+      trend: g('exec_trend'),
+    },
+    revenue: num('revenue'),
+    baseMargin: pct('baseMargin'),
+    ytdMargin: pct('ytdMargin'),
+    currMargin: pct('currMargin'),
+    marginTrend: g('marginTrend'),
+    targetMargin: pct('targetMargin'),
+    teamSize: num('teamSize'),
+    gdc: num('gdc'),
+    ops: {
+      delivery: g('ops_delivery'),
+      consultants: g('ops_consultants'),
+      attrition: g('ops_attrition'),
+      ftesTrend: g('ops_ftesTrend'),
+      sla: g('ops_sla'),
+      quality: g('ops_quality'),
+      clientSat: g('ops_clientSat'),
+      invoicing: g('ops_invoicing'),
+      otherRisks: g('ops_otherRisks'),
+    },
+    comment: g('comment') || '',
+    dm: g('dm') || '',
+  };
+
+  if (editingId) {
+    const idx = projects.findIndex(p=>p._id===editingId);
+    if (idx>=0) projects[idx] = proj;
+  } else {
+    projects.push(proj);
+  }
+
+  saveData();
+  closeForm();
+  refreshAll();
+  showToast((editingId ? 'Project updated' : 'Project added') + ' — remember to Export JSON to save!');
+}
+
+// ═══════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════
+function refreshAll() {
+  buildFilterButtons();
+  applyFilters();
+  renderEntryList();
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ═══════════════════════════════════════════
+// BOOT
+// ═══════════════════════════════════════════
+// Data loaded via welcome modal
+refreshAll();
+</script>
+</body>
+</html>
